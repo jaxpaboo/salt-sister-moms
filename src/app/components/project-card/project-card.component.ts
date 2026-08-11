@@ -16,6 +16,8 @@ export class ProjectCardComponent {
   @Output() edit = new EventEmitter<Project>();
   @Output() delete = new EventEmitter<Project>();
 
+  Math = Math;
+
   /** True when the user can still edit / delete (auth and non-archived). */
   get canManage(): boolean {
     return this.isAuthenticated;
