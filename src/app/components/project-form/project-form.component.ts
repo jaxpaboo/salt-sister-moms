@@ -127,7 +127,7 @@ export class ProjectFormComponent implements OnChanges {
     if (!model) return null;
     return {
       ...model,
-      seasons: [...model.seasons],
+      seasons: [...model?.seasons],
       checklist: model.checklist.map((c) => ({ ...c })),
     };
   }

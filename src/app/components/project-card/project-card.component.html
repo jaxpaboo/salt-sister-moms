@@ -16,7 +16,7 @@
   </ng-template>
 
   <ul class="meta">
-    <li *ngIf="project.seasons.length">
+    <li *ngIf="project.seasons?.length">
       <span class="meta-label">For</span>
       <span class="seasons">
         <span class="season-pill" *ngFor="let s of project.seasons">{{ s }}</span>
