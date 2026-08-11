@@ -43,7 +43,8 @@ export type SeasonOccasion =
   | 'Fall'
   | 'Winter'
   | 'Spring'
-  | 'Just Because';
+  | 'Just Because'
+  | 'PATTEST-DONT-UNSELECT';
 
 export const SEASON_OPTIONS: SeasonOccasion[] = [
   'New Year',
@@ -72,6 +73,7 @@ export const SEASON_OPTIONS: SeasonOccasion[] = [
   'Winter',
   'Spring',
   'Just Because',
+  'PATTEST-DONT-UNSELECT'
 ];
 
 export const STATUS_OPTIONS: ProjectStatus[] = [

@@ -39,7 +39,7 @@ export class ProjectFormComponent implements OnChanges {
   readonly difficultyOptions = DIFFICULTY_OPTIONS;
   readonly repostableOptions = REPOSTABLE_OPTIONS;
   readonly interestLevels = INTEREST_LEVELS;
-
+  
   // Local form state — keeps the form decoupled from the input model so we
   // don't mutate the parent's object until Save fires.
   draft: Project = this.blank();
@@ -89,14 +89,14 @@ export class ProjectFormComponent implements OnChanges {
 
   isSeasonSelected(season: SeasonOccasion): boolean {
     return this.draft.seasons.includes(season);
-  }
+  } 
 
   private blank(): Project {
     return {
       project_id: '',
       idea_title: '',
       idea_description: '',
-      seasons: [],
+      seasons: ['PATTEST-DONT-UNSELECT'],   // Need to debug later. Shouldn't have to have a season selected by default, but the form doesn't work if none are selected.
       status: 'New',
       work_in_process: false,
       post_date: '',
