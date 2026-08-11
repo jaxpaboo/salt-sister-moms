@@ -1,0 +1,9 @@
+<div class="toast-backdrop" *ngIf="visible" (click)="cancel.emit()">
+  <div class="toast" (click)="$event.stopPropagation()" role="alertdialog" aria-modal="true">
+    <p [innerHTML]="message"></p>
+    <div class="toast-actions">
+      <button class="btn btn-secondary" type="button" (click)="cancel.emit()">Cancel</button>
+      <button class="btn btn-danger" type="button" (click)="confirm.emit()">Confirm</button>
+    </div>
+  </div>
+</div>

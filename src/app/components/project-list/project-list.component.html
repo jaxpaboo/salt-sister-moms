@@ -1,0 +1,17 @@
+<ng-container *ngIf="projects.length; else emptyState">
+  <section class="project-grid">
+    <app-project-card
+      *ngFor="let p of projects; trackBy: trackById"
+      [project]="p"
+      [isAuthenticated]="isAuthenticated"
+      (edit)="edit.emit($event)"
+      (delete)="delete.emit($event)">
+    </app-project-card>
+  </section>
+</ng-container>
+
+<ng-template #emptyState>
+  <div class="empty">
+    <p>{{ emptyMessage }}</p>
+  </div>
+</ng-template>

@@ -1,0 +1,8 @@
+{
+  "/firebase-api": {
+    "target": "https://identitytoolkit.googleapis.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  }
+}

@@ -1,0 +1,167 @@
+<div class="modal-backdrop" *ngIf="visible" (click)="onCancel()">
+  <div class="modal project-form" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Edit idea ' + model?.project_id : 'New Salty Idea' }}</h3>
+      <button class="close-x-btn" type="button" (click)="onCancel()" aria-label="Close">×</button>
+    </div>
+
+    <form #projectForm="ngForm" (ngSubmit)="onSubmit(projectForm)" class="modal-body">
+      <div class="grid">
+        <label class="field full">
+          <span>Idea title</span>
+          <input
+            #titleInput
+            type="text"
+            name="idea_title"
+            [(ngModel)]="draft.idea_title"
+            required
+            maxlength="200"
+            placeholder="e.g. DIY Salt Dough Ornaments" />
+        </label>
+
+        <label class="field full">
+          <span>Description</span>
+          <textarea
+            name="idea_description"
+            [(ngModel)]="draft.idea_description"
+            rows="4"
+            placeholder="What is the idea? What's the hook?"></textarea>
+        </label>
+
+        <label class="field">
+          <span>Status</span>
+          <select name="status" [(ngModel)]="draft.status" required>
+            <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+          </select>
+        </label>
+
+        <label class="field checkbox-field">
+          <input type="checkbox" name="work_in_process" [(ngModel)]="draft.work_in_process" />
+          <span>Work in process</span>
+        </label>
+
+        <label class="field">
+          <span>Difficulty</span>
+          <select name="difficulty" [(ngModel)]="draft.difficulty">
+            <option value="">— select —</option>
+            <option *ngFor="let d of difficultyOptions" [value]="d">{{ d }}</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Re-postable</span>
+          <select name="repostable" [(ngModel)]="draft.repostable">
+            <option *ngFor="let r of repostableOptions" [value]="r">{{ r }}</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Post date</span>
+          <input type="date" name="post_date" [(ngModel)]="draft.post_date" />
+        </label>
+
+        <label class="field">
+          <span>Due date</span>
+          <input type="date" name="due_date" [(ngModel)]="draft.due_date" />
+        </label>
+
+        <label class="field full">
+          <span>Canva printable link</span>
+          <input
+            type="url"
+            name="canva_printable"
+            [(ngModel)]="draft.canva_printable"
+            placeholder="https://www.canva.com/…" />
+        </label>
+
+        <label class="field">
+          <span>Sponsor</span>
+          <select name="sponsor_id" [(ngModel)]="draft.sponsor_id">
+            <option value="">— none —</option>
+            <option *ngFor="let s of sponsors" [value]="s.sponsor_id">{{ s.name }}</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>Inspiration</span>
+          <select name="inspiration_id" [(ngModel)]="draft.inspiration_id">
+            <option value="">— none —</option>
+            <option *ngFor="let i of inspirations" [value]="i.inspiration_id">{{ i.name }}</option>
+          </select>
+        </label>
+
+        <label class="field full">
+          <span>Materials</span>
+          <input
+            type="text"
+            name="materials"
+            [(ngModel)]="draft.materials"
+            placeholder="flour, salt, water, paint…" />
+          <small class="hint">Comma separated.</small>
+        </label>
+
+        <fieldset class="field full seasons">
+          <legend>Season / occasion</legend>
+          <div class="pill-grid">
+            <button
+              *ngFor="let season of seasonOptions"
+              type="button"
+              class="pill"
+              [class.active]="isSeasonSelected(season)"
+              (click)="toggleSeason(season)">
+              {{ season }}
+            </button>
+          </div>
+        </fieldset>
+
+        <fieldset class="field full">
+          <legend>Interest level</legend>
+          <div class="interest-group">
+            <label *ngFor="let level of interestLevels" class="interest-pill">
+              <input
+                type="radio"
+                name="interest_level"
+                [value]="level"
+                [(ngModel)]="draft.interest_level" />
+              <span>{{ level }}</span>
+            </label>
+            <button type="button" class="text-btn" (click)="draft.interest_level = null">Clear</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="field full">
+          <legend>Checklist</legend>
+          <ul class="checklist">
+            <li *ngFor="let item of draft.checklist; let i = index; trackBy: trackChecklist">
+              <input
+                type="checkbox"
+                [ngModel]="item.done"
+                (ngModelChange)="item.done = $event"
+                [name]="'check_done_' + i" />
+              <input
+                type="text"
+                [ngModel]="item.text"
+                (ngModelChange)="item.text = $event"
+                [name]="'check_text_' + i"
+                placeholder="Step or material…" />
+              <button type="button" class="text-btn danger" (click)="removeChecklistItem(i)" aria-label="Remove row">×</button>
+            </li>
+          </ul>
+          <button type="button" class="btn btn-secondary" (click)="addChecklistItem()">+ Add row</button>
+        </fieldset>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" (click)="onCancel()">Cancel</button>
+        <button class="btn btn-primary" type="submit">
+          {{ isEditing ? 'Save changes' : 'Create idea' }}
+        </button>
+        <button
+          *ngIf="isEditing"
+          class="btn btn-danger"
+          type="button"
+          (click)="onDelete()">Delete</button>
+      </div>
+    </form>
+  </div>
+</div>

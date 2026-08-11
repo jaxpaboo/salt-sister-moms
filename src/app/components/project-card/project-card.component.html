@@ -1,0 +1,58 @@
+<article class="project-card" [class.wip]="project.work_in_process">
+  <header class="project-card__head">
+    <span class="id-chip">{{ project.project_id }}</span>
+    <span class="status-chip" [class]="'status-' + project.status.replace(/\s+/g, '-').toLowerCase()">
+      {{ project.status }}
+    </span>
+  </header>
+
+  <h2 class="title">{{ project.idea_title || 'Untitled idea' }}</h2>
+
+  <p class="description" *ngIf="project.idea_description; else emptyDescription">
+    {{ project.idea_description }}
+  </p>
+  <ng-template #emptyDescription>
+    <p class="description muted">No description yet.</p>
+  </ng-template>
+
+  <ul class="meta">
+    <li *ngIf="project.seasons.length">
+      <span class="meta-label">For</span>
+      <span class="seasons">
+        <span class="season-pill" *ngFor="let s of project.seasons">{{ s }}</span>
+      </span>
+    </li>
+    <li *ngIf="project.difficulty">
+      <span class="meta-label">Difficulty</span>
+      <span class="value">{{ project.difficulty }}</span>
+    </li>
+    <li *ngIf="project.repostable">
+      <span class="meta-label">Re-postable</span>
+      <span class="value">{{ project.repostable }}</span>
+    </li>
+    <li *ngIf="project.interest_level !== null">
+      <span class="meta-label">Interest</span>
+      <span class="interest">
+        <span
+          *ngFor="let _ of [].constructor(project.interest_level); let i = index"
+          class="star">★</span>
+        <span
+          *ngFor="let _ of [].constructor(5 - (project.interest_level || 0)); let i = index"
+          class="star empty">★</span>
+      </span>
+    </li>
+    <li *ngIf="project.due_date">
+      <span class="meta-label">Due</span>
+      <span class="value">{{ project.due_date }}</span>
+    </li>
+    <li *ngIf="project.post_date">
+      <span class="meta-label">Post</span>
+      <span class="value">{{ project.post_date }}</span>
+    </li>
+  </ul>
+
+  <footer class="card-footer" *ngIf="canManage">
+    <button class="icon-btn" type="button" (click)="onEdit($event)" title="Edit" aria-label="Edit">✎</button>
+    <button class="icon-btn danger" type="button" (click)="onDelete($event)" title="Delete" aria-label="Delete">🗑</button>
+  </footer>
+</article>

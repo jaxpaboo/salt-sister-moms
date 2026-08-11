@@ -1,0 +1,30 @@
+<header class="topbar">
+  <div class="brand-section">
+    <span class="brand-icon" aria-hidden="true">🧂</span>
+    <h1 class="brand">Salty Ideas</h1>
+  </div>
+
+  <nav class="primary-nav" *ngIf="isAuthenticated">
+    <button
+      *ngFor="let tab of tabs"
+      class="nav-tab"
+      type="button"
+      [class.active]="selectedTab === tab.value"
+      (click)="tabSelected.emit(tab.value)">
+      {{ tab.label }}
+    </button>
+  </nav>
+
+  <div class="header-controls">
+    <ng-container *ngIf="isAuthenticated; else loggedOut">
+      <button class="btn btn-outline" type="button" (click)="sponsorsClick.emit()">Sponsors</button>
+      <button class="btn btn-outline" type="button" (click)="inspirationsClick.emit()">Inspirations</button>
+      <button class="btn btn-success" type="button" (click)="newProjectClick.emit()">+ New Idea</button>
+      <span class="who">{{ email }}</span>
+      <button class="btn btn-secondary" type="button" (click)="logoutClick.emit()">Sign out</button>
+    </ng-container>
+    <ng-template #loggedOut>
+      <button class="btn btn-primary" type="button" (click)="loginClick.emit()">Sign in</button>
+    </ng-template>
+  </div>
+</header>

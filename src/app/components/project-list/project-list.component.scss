@@ -1,0 +1,14 @@
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.empty {
+  background: #ffffff;
+  border: 1px dashed #d1d5db;
+  border-radius: 1rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: #6b7280;
+}

@@ -1,0 +1,63 @@
+<app-header
+  [isAuthenticated]="auth.isAuthenticated()"
+  [email]="auth.email()"
+  [selectedTab]="selectedTab"
+  [tabs]="tabs"
+  [version]="appVersion"
+  (loginClick)="openLogin()"
+  (logoutClick)="logout()"
+  (newProjectClick)="openNew()"
+  (tabSelected)="selectTab($event)"
+  (sponsorsClick)="openSponsors()"
+  (inspirationsClick)="openInspirations()"
+></app-header>
+
+<main class="page" tabindex="-1">
+  <section class="dashboard">
+    <div class="dashboard-head">
+      <div>
+        <h2 class="dashboard-title">{{ headTitle() }}</h2>
+        <p class="dashboard-sub">{{ headSub() }}</p>
+      </div>
+      <div class="dashboard-status" *ngIf="projects.error() as err">{{ err }}</div>
+    </div>
+
+    <app-project-list
+      [projects]="displayedProjects()"
+      [isAuthenticated]="auth.isAuthenticated()"
+      [emptyMessage]="emptyMessage()"
+      (edit)="openEdit($event)"
+      (delete)="confirmDelete($event)">
+    </app-project-list>
+  </section>
+</main>
+
+<app-login-modal
+  [visible]="showLogin"
+  [email]="loginEmail"
+  [password]="loginPassword"
+  [error]="auth.error()"
+  [busy]="loginBusy"
+  (emailChange)="loginEmail = $event"
+  (passwordChange)="loginPassword = $event"
+  (submit)="submitLogin($event)"
+  (close)="closeLogin()">
+</app-login-modal>
+
+<app-project-form
+  [visible]="showForm"
+  [model]="editingProject"
+  [sponsors]="projects.sponsors()"
+  [inspirations]="projects.inspirations()"
+  [isEditing]="isEditing"
+  (save)="onSave($event)"
+  (cancel)="closeForm()"
+  (delete)="onDelete($event)">
+</app-project-form>
+
+<app-confirmation-toast
+  [visible]="showConfirm"
+  [message]="confirmMessage"
+  (confirm)="doDelete()"
+  (cancel)="cancelDelete()">
+</app-confirmation-toast>
