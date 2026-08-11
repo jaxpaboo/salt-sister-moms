@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 
 import {
-  ChecklistItem,
   DIFFICULTY_OPTIONS,
   INTEREST_LEVELS,
   Project,
@@ -14,10 +13,11 @@ import {
 } from '../../models/project';
 import { Sponsor } from '../../models/sponsor';
 import { Inspiration } from '../../models/inspiration';
+import { ChecklistEditorComponent } from '../checklist-editor/checklist-editor.component';
 
 @Component({
   selector: 'app-project-form',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ChecklistEditorComponent],
   templateUrl: './project-form.component.html',
   styleUrl: './project-form.component.scss',
 })
@@ -60,28 +60,18 @@ export class ProjectFormComponent implements OnChanges {
       : [...this.draft.seasons, season];
   }
 
-  addChecklistItem(): void {
-    this.draft.checklist = [...this.draft.checklist, { text: '', done: false }];
-  }
-
-  removeChecklistItem(index: number): void {
-    this.draft.checklist = this.draft.checklist.filter((_, i) => i !== index);
-  }
-
-  trackChecklist = (_: number, item: ChecklistItem) => item.text + '|' + item.done;
-
   onSubmit(form: NgForm): void {
     if (form.invalid) {
       form.control.markAllAsTouched();
       return;
     }
-    // Sanitize: trim strings, drop empty checklist rows.
+    // Sanitize: trim strings, drop empty rows from checklist-style fields.
     const cleaned: Project = {
       ...this.draft,
       idea_title: (this.draft.idea_title ?? '').trim(),
       idea_description: (this.draft.idea_description ?? '').trim(),
-      materials: (this.draft.materials ?? '').trim(),
       canva_printable: (this.draft.canva_printable ?? '').trim(),
+      materials: this.draft.materials.filter((m) => (m.text ?? '').trim().length > 0),
       checklist: this.draft.checklist.filter((c) => (c.text ?? '').trim().length > 0),
     };
     this.save.emit(cleaned);
@@ -115,7 +105,7 @@ export class ProjectFormComponent implements OnChanges {
       difficulty: '',
       sponsor_id: '',
       inspiration_id: '',
-      materials: '',
+      materials: [],
       checklist: [],
       repostable: 'Maybe',
       interest_level: null,
@@ -128,6 +118,7 @@ export class ProjectFormComponent implements OnChanges {
     return {
       ...model,
       seasons: [...model?.seasons],
+      materials: (model.materials ?? []).map((m) => ({ ...m })),
       checklist: model.checklist.map((c) => ({ ...c })),
     };
   }

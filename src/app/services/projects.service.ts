@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 
-import { Project } from '../models/project';
+import { ChecklistItem, Project } from '../models/project';
 import { Inspiration } from '../models/inspiration';
 import { Sponsor } from '../models/sponsor';
 import { nextProjectId } from '../models/project-id';
@@ -22,6 +22,10 @@ export class ProjectsService {
   readonly loading = signal(false);
   readonly error = signal<string>('');
 
+  // Guard so legacy `materials: string` records get migrated to
+  // ChecklistItem[] at most once per session.
+  private materialsMigrated = false;
+
   async refreshAll(): Promise<void> {
     this.loading.set(true);
     this.error.set('');
@@ -31,7 +35,8 @@ export class ProjectsService {
         this.db.list<Sponsor>(TABLE.sponsors),
         this.db.list<Inspiration>(TABLE.inspirations),
       ]);
-      this.projects.set(projects);
+      const migratedProjects = await this.migrateMaterials(projects);
+      this.projects.set(migratedProjects);
       this.sponsors.set(sponsors);
       this.inspirations.set(inspirations);
     } catch (e) {
@@ -41,11 +46,46 @@ export class ProjectsService {
     }
   }
 
+  /**
+   * Older projects stored `materials` as a comma-separated string. Convert
+   * any legacy record into ChecklistItem[] in memory and write the new
+   * shape back to RTDB so the editor sees consistent data on next load.
+   * Idempotent and bounded to once per session.
+   */
+  private async migrateMaterials(projects: Project[]): Promise<Project[]> {
+    if (this.materialsMigrated) return projects;
+    this.materialsMigrated = true;
+
+    const writes: Array<Promise<void>> = [];
+    const normalized = projects.map((p) => {
+      if (Array.isArray(p.materials)) return p;
+      const converted: ChecklistItem[] = this.splitMaterials(p.materials as unknown as string);
+      writes.push(
+        this.db.update<Project>(TABLE.projects, p.project_id, { materials: converted }),
+      );
+      return { ...p, materials: converted };
+    });
+    if (writes.length) {
+      await Promise.all(writes);
+    }
+    return normalized;
+  }
+
+  private splitMaterials(raw: string | null | undefined): ChecklistItem[] {
+    if (!raw) return [];
+    return raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+      .map((text) => ({ text, done: false }));
+  }
+
   async createProject(partial: Partial<Project> = {}): Promise<Project> {
     const id = nextProjectId(this.projects());
     const now = new Date().toISOString();
-    const project: Project = {
-      project_id: id,
+    // Defaults, then the caller's draft, then fields we always own
+    // (project_id and updated_at) so they can't be overwritten.
+    const draft: Omit<Project, 'project_id' | 'updated_at'> = {
       idea_title: '',
       idea_description: '',
       seasons: [],
@@ -57,12 +97,16 @@ export class ProjectsService {
       difficulty: '',
       sponsor_id: '',
       inspiration_id: '',
-      materials: '',
+      materials: [],
       checklist: [],
       repostable: 'Maybe',
       interest_level: null,
-      updated_at: now,
       ...partial,
+    };
+    const project: Project = {
+      ...draft,
+      project_id: id,
+      updated_at: now,
     };
 
     await this.db.create<Project>(TABLE.projects, id, project);

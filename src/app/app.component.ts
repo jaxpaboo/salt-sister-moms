@@ -162,13 +162,15 @@ export class AppComponent implements OnInit {
 
   // --- New / edit / save flow --------------------------------------------
 
-  async openNew(): Promise<void> {
+  // Open the form with no model. The row isn't created in Firebase until
+  // the user clicks Save — that way the Delete button can stay hidden
+  // until the project actually exists.
+  openNew(): void {
     if (!this.auth.isAuthenticated()) {
       this.openLogin();
       return;
     }
-    const draft = await this.projects.createProject({ idea_title: 'New idea' });
-    this.editingProject = draft;
+    this.editingProject = null;
     this.showForm = true;
   }
 
@@ -187,19 +189,17 @@ export class AppComponent implements OnInit {
 
   closeForm(): void {
     this.showForm = false;
-    // For new projects we already created a placeholder row; if the user
-    // cancels with no title, discard it so the dashboard doesn't litter.
-    if (this.editingProject && (this.editingProject.idea_title ?? '').trim() === 'New idea') {
-      void this.projects.deleteProject(this.editingProject.project_id);
-    }
     this.editingProject = null;
   }
 
   async onSave(project: Project): Promise<void> {
-    if (this.isEditing && this.editingProject) {
+    if (this.editingProject && this.editingProject.project_id) {
+      // Existing project — update in place.
       await this.projects.updateProject(this.editingProject.project_id, project);
-    } else if (project.project_id) {
-      await this.projects.updateProject(project.project_id, project);
+    } else {
+      // Brand-new project — first save creates the row.
+      const created = await this.projects.createProject(project);
+      this.editingProject = created;
     }
     this.showForm = false;
     this.editingProject = null;
@@ -209,7 +209,7 @@ export class AppComponent implements OnInit {
 
   confirmDelete(project: Project): void {
     this.pendingDeleteId = project.project_id;
-    this.confirmMessage = `Delete idea ${project.project_id}? This cannot be undone.`;
+    this.confirmMessage = `Delete idea <b>${project.idea_title}</b>?<br><br><i>This cannot be undone.</i>`;
     this.showConfirm = true;
   }
 
@@ -227,9 +227,11 @@ export class AppComponent implements OnInit {
   }
 
   async onDelete(project: Project): Promise<void> {
+    // Close the form first; reuse the same confirmation flow as the card
+    // delete. If the user cancels, the project stays put.
     this.showForm = false;
     this.editingProject = null;
-    await this.projects.deleteProject(project.project_id);
+    this.confirmDelete(project);
   }
 
   // --- Stub side-screens (Sponsors / Inspirations) -----------------------

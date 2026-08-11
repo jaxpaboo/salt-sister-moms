@@ -1,0 +1,56 @@
+// Make the <app-checklist-editor> host span both columns of the parent
+// grid (the parent's `.field.full { grid-column: 1 / -1 }` is scoped to
+// its own template and won't reach the host of a child component).
+:host {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+  width: 100%;
+}
+
+fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  border: none;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  width: 100%;
+
+  legend {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    color: #6b7280;
+  }
+}
+
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0.4rem 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+
+  li {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem;
+    align-items: center;
+    width: 100%;
+  }
+
+  input[type='text'] {
+    border: 1px solid #d1d5db;
+    border-radius: 0.4rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+    width: 100%;
+    min-width: 0;
+  }
+}

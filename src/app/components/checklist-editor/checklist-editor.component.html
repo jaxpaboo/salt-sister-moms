@@ -1,0 +1,22 @@
+<fieldset>
+  <legend>{{ legend }}</legend>
+  <ul class="checklist">
+    <li *ngFor="let item of _items; let i = index">
+      <input
+        type="checkbox"
+        [(ngModel)]="item.done"
+        [name]="legend + '_done_' + i" />
+      <input
+        type="text"
+        [(ngModel)]="item.text"
+        [name]="legend + '_text_' + i"
+        [placeholder]="placeholder" />
+      <button
+        type="button"
+        class="text-btn danger"
+        (click)="removeItem(i)"
+        aria-label="Remove row">×</button>
+    </li>
+  </ul>
+  <button type="button" class="btn btn-secondary" (click)="addItem()">+ Add row</button>
+</fieldset>

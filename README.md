@@ -123,7 +123,7 @@ the CLI at a different project.
 | `difficulty` | string | `easy` / `medium` / `hard` / `expert` |
 | `sponsor_id` | string | FK into `sponsors` |
 | `inspiration_id` | string | FK into `inspirations` |
-| `materials` | string | Comma-separated list |
+| `materials` | `{ text: string; done: boolean }[]` | Same shape as `checklist`; one row per material |
 | `checklist` | `{ text: string; done: boolean }[]` | Per-project |
 | `repostable` | string | `Yes` / `No` / `Maybe` |
 | `interest_level` | number \| null | 1–5 stars |

@@ -1,7 +1,7 @@
 <div class="modal-backdrop" *ngIf="visible" (click)="onCancel()">
   <div class="modal project-form" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>{{ isEditing ? 'Edit idea ' + model?.project_id : 'New Salty Idea' }}</h3>
+      <h3>{{ isEditing ? 'Edit idea -- ' + model?.idea_title + ' (' + model?.project_id + ')' : 'New Salty Idea' }}</h3>
       <button class="close-x-btn" type="button" (click)="onCancel()" aria-label="Close">×</button>
     </div>
 
@@ -90,15 +90,12 @@
           </select>
         </label>
 
-        <label class="field full">
-          <span>Materials</span>
-          <input
-            type="text"
-            name="materials"
-            [(ngModel)]="draft.materials"
-            placeholder="flour, salt, water, paint…" />
-          <small class="hint">Comma separated.</small>
-        </label>
+        <app-checklist-editor
+          legend="Materials"
+          placeholder="flour, salt, water, paint…"
+          [items]="draft.materials"
+          (itemsChange)="draft.materials = $event">
+        </app-checklist-editor>
 
         <fieldset class="field full seasons">
           <legend>Season / occasion</legend>
@@ -117,38 +114,27 @@
         <fieldset class="field full">
           <legend>Interest level</legend>
           <div class="interest-group">
-            <label *ngFor="let level of interestLevels" class="interest-pill">
-              <input
-                type="radio"
-                name="interest_level"
-                [value]="level"
-                [(ngModel)]="draft.interest_level" />
-              <span>{{ level }}</span>
-            </label>
+            <span class="interest">
+              <button
+                *ngFor="let level of interestLevels"
+                type="button"
+                class="star-btn"
+                [class.filled]="(draft.interest_level || 0) >= level"
+                (click)="draft.interest_level = level"
+                [attr.aria-label]="'Set interest to ' + level">
+                ★
+              </button>
+            </span>
             <button type="button" class="text-btn" (click)="draft.interest_level = null">Clear</button>
           </div>
         </fieldset>
 
-        <fieldset class="field full">
-          <legend>Checklist</legend>
-          <ul class="checklist">
-            <li *ngFor="let item of draft.checklist; let i = index; trackBy: trackChecklist">
-              <input
-                type="checkbox"
-                [ngModel]="item.done"
-                (ngModelChange)="item.done = $event"
-                [name]="'check_done_' + i" />
-              <input
-                type="text"
-                [ngModel]="item.text"
-                (ngModelChange)="item.text = $event"
-                [name]="'check_text_' + i"
-                placeholder="Step or material…" />
-              <button type="button" class="text-btn danger" (click)="removeChecklistItem(i)" aria-label="Remove row">×</button>
-            </li>
-          </ul>
-          <button type="button" class="btn btn-secondary" (click)="addChecklistItem()">+ Add row</button>
-        </fieldset>
+        <app-checklist-editor
+          legend="Checklist"
+          placeholder="Step or material…"
+          [items]="draft.checklist"
+          (itemsChange)="draft.checklist = $event">
+        </app-checklist-editor>
       </div>
 
       <div class="modal-footer">

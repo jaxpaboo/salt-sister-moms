@@ -118,9 +118,10 @@ export interface Project {
   // Foreign keys into the sponsor / inspiration tables.
   sponsor_id: string;
   inspiration_id: string;
-  // Stored as a comma-separated string so the form is a plain text input.
-  // If you'd rather store as an array, change the form + this type together.
-  materials: string;
+  // Per-row editable list. Stored as an array so each material can be
+  // checked off as it's gathered. Same shape as `checklist` — both are
+  // edited by the same checklist-editor component.
+  materials: ChecklistItem[];
   checklist: ChecklistItem[];
   repostable: Repostable;
   interest_level: InterestLevel | null;
