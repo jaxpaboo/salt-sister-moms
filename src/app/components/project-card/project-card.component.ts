@@ -12,9 +12,11 @@ import { Project } from '../../models/project';
 export class ProjectCardComponent {
   @Input({ required: true }) project!: Project;
   @Input() isAuthenticated = false;
+  @Input() showRestore = false;
 
   @Output() edit = new EventEmitter<Project>();
   @Output() delete = new EventEmitter<Project>();
+  @Output() restore = new EventEmitter<Project>();
 
   Math = Math;
 
@@ -31,5 +33,10 @@ export class ProjectCardComponent {
   onDelete(event: MouseEvent): void {
     event.stopPropagation();
     this.delete.emit(this.project);
+  }
+
+  onRestore(event: MouseEvent): void {
+    event.stopPropagation();
+    this.restore.emit(this.project);
   }
 }

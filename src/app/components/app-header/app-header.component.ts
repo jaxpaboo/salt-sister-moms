@@ -15,6 +15,7 @@ export class AppHeaderComponent {
   @Input() selectedTab: DashboardTab = 'all';
   @Input() tabs: Array<{ label: string; value: DashboardTab }> = [];
   @Input() version = '0.0.0';
+  @Input() showTrashTab = false;
 
   @Output() loginClick = new EventEmitter<void>();
   @Output() logoutClick = new EventEmitter<void>();
@@ -22,4 +23,25 @@ export class AppHeaderComponent {
   @Output() tabSelected = new EventEmitter<DashboardTab>();
   @Output() sponsorsClick = new EventEmitter<void>();
   @Output() inspirationsClick = new EventEmitter<void>();
+  @Output() trashClick = new EventEmitter<void>();
+
+  settingsOpen = false;
+
+  toggleSettings(): void {
+    this.settingsOpen = !this.settingsOpen;
+  }
+
+  closeSettings(): void {
+    this.settingsOpen = false;
+  }
+
+  onLogout(): void {
+    this.closeSettings();
+    this.logoutClick.emit();
+  }
+
+  onTrash(): void {
+    this.closeSettings();
+    this.trashClick.emit();
+  }
 }

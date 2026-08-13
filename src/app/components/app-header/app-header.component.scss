@@ -96,6 +96,23 @@
   }
 }
 
+.btn-icon {
+  background: transparent;
+  border: none;
+  padding: 0.4rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  border-radius: 0.4rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: #f3f4f6;
+  }
+}
+
 .who {
   font-size: 0.8rem;
   color: #6b7280;
@@ -103,6 +120,59 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Settings dropdown */
+.settings-container {
+  position: relative;
+}
+
+.settings-btn {
+  font-size: 1.3rem;
+}
+
+.settings-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.4rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.6rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #374151;
+
+  &:hover {
+    background: #f9fafb;
+  }
+}
+
+.dropdown-version {
+  padding: 0.65rem 1rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  border-top: 1px solid #f3f4f6;
+}
+
+/* Backdrop to close dropdown when clicking outside */
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
 }
 
 @media (max-width: 720px) {

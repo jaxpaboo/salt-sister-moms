@@ -56,6 +56,12 @@ export class AppComponent implements OnInit {
   confirmMessage = '';
   private pendingDeleteId: string | null = null;
 
+  // Trash view state
+  showTrash = false;
+
+  // Search
+  searchQuery = signal('');
+
   // Side-screen placeholders. The Sponsors / Inspirations tabs fire these so
   // the header isn't a dead control, but the management UIs are a future task.
   // We surface a friendly toast via `confirmMessage` so it doesn't look broken.
@@ -83,9 +89,14 @@ export class AppComponent implements OnInit {
     void this.projects.refreshAll().catch(() => {});
   }
 
+  onSearchInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(value);
+  }
+
   // Derived: which projects show on the dashboard given the selected tab.
   readonly displayedProjects = computed(() => {
-    const all = this.projects.projects();
+    const all = this.projects.activeProjects();
     switch (this.selectedTab) {
       case 'active':
         return all.filter((p) => p.status !== 'Archive');
@@ -97,7 +108,23 @@ export class AppComponent implements OnInit {
     }
   });
 
+  // Further filter by search query (typeahead on title, description, id).
+  readonly filteredProjects = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    if (!q) return this.displayedProjects();
+    return this.displayedProjects().filter((p) => {
+      return (
+        p.idea_title.toLowerCase().includes(q) ||
+        p.idea_description.toLowerCase().includes(q) ||
+        p.project_id.toLowerCase().includes(q)
+      );
+    });
+  });
+
   headTitle(): string {
+    if (this.showTrash) {
+      return 'Trash';
+    }
     switch (this.selectedTab) {
       case 'active':
         return 'Active ideas';
@@ -109,14 +136,21 @@ export class AppComponent implements OnInit {
   }
 
   headSub(): string {
+    if (this.showTrash) {
+      const count = this.projects.trashedProjects().length;
+      return `${count} ${count === 1 ? 'idea' : 'ideas'} in the trash.`;
+    }
     if (!this.auth.isAuthenticated()) {
       return 'Browse the demo. Sign in to view and edit your ideas.';
     }
-    const count = this.displayedProjects().length;
+    const count = this.filteredProjects().length;
     return `${count} ${count === 1 ? 'idea' : 'ideas'} on this board.`;
   }
 
   emptyMessage(): string {
+    if (this.showTrash) {
+      return 'Trash is empty.';
+    }
     if (!this.auth.isAuthenticated()) {
       return 'Sign in to load your ideas from Firebase.';
     }
@@ -128,6 +162,23 @@ export class AppComponent implements OnInit {
 
   selectTab(tab: DashboardTab): void {
     this.selectedTab = tab;
+    this.showTrash = false;
+    this.searchQuery.set('');
+  }
+
+  // --- Trash view ---------------------------------------------------------
+
+  openTrash(): void {
+    this.showTrash = true;
+    this.searchQuery.set('');
+  }
+
+  closeTrash(): void {
+    this.showTrash = false;
+  }
+
+  async restoreProject(project: Project): Promise<void> {
+    await this.projects.restoreProject(project.project_id);
   }
 
   // --- Login flow --------------------------------------------------------
@@ -209,7 +260,7 @@ export class AppComponent implements OnInit {
 
   confirmDelete(project: Project): void {
     this.pendingDeleteId = project.project_id;
-    this.confirmMessage = `Delete idea <b>${project.idea_title}</b>?<br><br><i>This cannot be undone.</i>`;
+    this.confirmMessage = `Move idea <b>${project.idea_title}</b> to trash?<br><br><i>You can restore it later from the Trash view.</i>`;
     this.showConfirm = true;
   }
 

@@ -4,8 +4,10 @@
       *ngFor="let p of projects; trackBy: trackById"
       [project]="p"
       [isAuthenticated]="isAuthenticated"
+      [showRestore]="showRestore"
       (edit)="edit.emit($event)"
-      (delete)="delete.emit($event)">
+      (delete)="delete.emit($event)"
+      (restore)="restore.emit($event)">
     </app-project-card>
   </section>
 </ng-container>

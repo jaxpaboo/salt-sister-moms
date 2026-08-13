@@ -43,8 +43,7 @@ export type SeasonOccasion =
   | 'Fall'
   | 'Winter'
   | 'Spring'
-  | 'Just Because'
-  | 'PATTEST-DONT-UNSELECT';
+  | 'Just Because';
 
 export const SEASON_OPTIONS: SeasonOccasion[] = [
   'New Year',
@@ -72,8 +71,7 @@ export const SEASON_OPTIONS: SeasonOccasion[] = [
   'Fall',
   'Winter',
   'Spring',
-  'Just Because',
-  'PATTEST-DONT-UNSELECT'
+  'Just Because',  
 ];
 
 export const STATUS_OPTIONS: ProjectStatus[] = [
@@ -127,6 +125,8 @@ export interface Project {
   checklist: ChecklistItem[];
   repostable: Repostable;
   interest_level: InterestLevel | null;
+  // Soft-delete flag: true when moved to trash, false/undefined when active.
+  project_deleted?: boolean;
   // ISO timestamp of last edit (used for sort / display).
   updated_at: string;
 }

@@ -1,7 +1,7 @@
 <header class="topbar">
   <div class="brand-section">
     <span class="brand-icon" aria-hidden="true">🧂</span>
-    <h1 class="brand">Salty Ideas v.0.0.12</h1>
+    <h1 class="brand">Salty Ideas</h1>
   </div>
 
   <nav class="primary-nav" *ngIf="isAuthenticated">
@@ -9,9 +9,16 @@
       *ngFor="let tab of tabs"
       class="nav-tab"
       type="button"
-      [class.active]="selectedTab === tab.value"
+      [class.active]="selectedTab === tab.value && !showTrashTab"
       (click)="tabSelected.emit(tab.value)">
       {{ tab.label }}
+    </button>
+    <button
+      *ngIf="showTrashTab"
+      class="nav-tab active"
+      type="button"
+      (click)="trashClick.emit()">
+      Trash
     </button>
   </nav>
 
@@ -21,10 +28,20 @@
       <button class="btn btn-outline" type="button" (click)="inspirationsClick.emit()">Inspirations</button>
       <button class="btn btn-success" type="button" (click)="newProjectClick.emit()">+ New Idea</button>
       <span class="who">{{ email }}</span>
-      <button class="btn btn-secondary" type="button" (click)="logoutClick.emit()">Sign out</button>
+      <div class="settings-container" (click)="$event.stopPropagation()">
+        <button class="btn btn-icon settings-btn" type="button" (click)="toggleSettings()" title="Settings" aria-label="Settings">⚙</button>
+        <div class="settings-dropdown" *ngIf="settingsOpen" (click)="$event.stopPropagation()">
+          <button class="dropdown-item" type="button" (click)="onTrash()">Trash</button>
+          <button class="dropdown-item" type="button" (click)="onLogout()">Sign out</button>
+          <div class="dropdown-version">v{{ version }}</div>
+        </div>
+      </div>
     </ng-container>
     <ng-template #loggedOut>
       <button class="btn btn-primary" type="button" (click)="loginClick.emit()">Sign in</button>
     </ng-template>
   </div>
 </header>
+
+<!-- Backdrop to close settings when clicking outside -->
+<div class="settings-backdrop" *ngIf="settingsOpen" (click)="closeSettings()"></div>

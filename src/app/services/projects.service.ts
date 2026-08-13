@@ -36,7 +36,13 @@ export class ProjectsService {
         this.db.list<Inspiration>(TABLE.inspirations),
       ]);
       const migratedProjects = await this.migrateMaterials(projects);
-      this.projects.set(migratedProjects);
+      const normalizedProjects = migratedProjects.map((p) => ({
+        ...p,
+        seasons: p.seasons ?? [],
+        materials: p.materials ?? [],
+        checklist: p.checklist ?? [],
+      }));
+      this.projects.set(normalizedProjects);
       this.sponsors.set(sponsors);
       this.inspirations.set(inspirations);
     } catch (e) {
@@ -123,8 +129,38 @@ export class ProjectsService {
   }
 
   async deleteProject(id: string): Promise<void> {
-    await this.db.remove(TABLE.projects, id);
-    this.projects.update((list) => list.filter((p) => p.project_id !== id));
+    // Soft delete: set project_deleted to true instead of removing.
+    await this.db.update<Project>(TABLE.projects, id, {
+      project_deleted: true,
+      updated_at: new Date().toISOString(),
+    });
+    this.projects.update((list) =>
+      list.map((p) =>
+        p.project_id === id ? { ...p, project_deleted: true, updated_at: new Date().toISOString() } : p,
+      ),
+    );
+  }
+
+  async restoreProject(id: string): Promise<void> {
+    await this.db.update<Project>(TABLE.projects, id, {
+      project_deleted: false,
+      updated_at: new Date().toISOString(),
+    });
+    this.projects.update((list) =>
+      list.map((p) =>
+        p.project_id === id ? { ...p, project_deleted: false, updated_at: new Date().toISOString() } : p,
+      ),
+    );
+  }
+
+  /** Return only non-deleted projects for the main dashboard. */
+  activeProjects(): Project[] {
+    return this.projects().filter((p) => !p.project_deleted);
+  }
+
+  /** Return only soft-deleted projects for the trash view. */
+  trashedProjects(): Project[] {
+    return this.projects().filter((p) => p.project_deleted);
   }
 
   async createSponsor(input: Omit<Sponsor, 'sponsor_id'>): Promise<Sponsor> {

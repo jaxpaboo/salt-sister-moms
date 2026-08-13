@@ -4,12 +4,14 @@
   [selectedTab]="selectedTab"
   [tabs]="tabs"
   [version]="appVersion"
+  [showTrashTab]="showTrash"
   (loginClick)="openLogin()"
   (logoutClick)="logout()"
   (newProjectClick)="openNew()"
   (tabSelected)="selectTab($event)"
   (sponsorsClick)="openSponsors()"
   (inspirationsClick)="openInspirations()"
+  (trashClick)="openTrash()"
 ></app-header>
 
 <main class="page" tabindex="-1">
@@ -19,16 +21,38 @@
         <h2 class="dashboard-title">{{ headTitle() }}</h2>
         <p class="dashboard-sub">{{ headSub() }}</p>
       </div>
-      <div class="dashboard-status" *ngIf="projects.error() as err">{{ err }}</div>
+      <div class="dashboard-head-right">
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search ideas…"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          (input)="onSearchInput($event)" />
+        <div class="dashboard-status" *ngIf="projects.error() as err">{{ err }}</div>
+      </div>
     </div>
 
-    <app-project-list
-      [projects]="displayedProjects()"
-      [isAuthenticated]="auth.isAuthenticated()"
-      [emptyMessage]="emptyMessage()"
-      (edit)="openEdit($event)"
-      (delete)="confirmDelete($event)">
-    </app-project-list>
+    <ng-container *ngIf="showTrash; else mainList">
+      <app-project-list
+        [projects]="projects.trashedProjects()"
+        [isAuthenticated]="auth.isAuthenticated()"
+        [emptyMessage]="emptyMessage()"
+        [showRestore]="true"
+        (edit)="openEdit($event)"
+        (delete)="confirmDelete($event)"
+        (restore)="restoreProject($event)">
+      </app-project-list>
+    </ng-container>
+    <ng-template #mainList>
+      <app-project-list
+        [projects]="filteredProjects()"
+        [isAuthenticated]="auth.isAuthenticated()"
+        [emptyMessage]="emptyMessage()"
+        (edit)="openEdit($event)"
+        (delete)="confirmDelete($event)">
+      </app-project-list>
+    </ng-template>
   </section>
 </main>
 

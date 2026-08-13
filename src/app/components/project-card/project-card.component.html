@@ -55,6 +55,7 @@
 
   <footer class="card-footer" *ngIf="canManage">
     <button class="icon-btn" type="button" (click)="onEdit($event)" title="Edit" aria-label="Edit">✎</button>
+    <button *ngIf="showRestore" class="icon-btn success" type="button" (click)="onRestore($event)" title="Restore" aria-label="Restore">↩</button>
     <button class="icon-btn danger" type="button" (click)="onDelete($event)" title="Delete" aria-label="Delete">🗑</button>
   </footer>
 </article>

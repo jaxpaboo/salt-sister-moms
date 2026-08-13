@@ -96,7 +96,7 @@ export class ProjectFormComponent implements OnChanges {
       project_id: '',
       idea_title: '',
       idea_description: '',
-      seasons: ['PATTEST-DONT-UNSELECT'],   // Need to debug later. Shouldn't have to have a season selected by default, but the form doesn't work if none are selected.
+      seasons: [],
       status: 'New',
       work_in_process: false,
       post_date: '',
@@ -105,8 +105,8 @@ export class ProjectFormComponent implements OnChanges {
       difficulty: '',
       sponsor_id: '',
       inspiration_id: '',
-      materials: [{ done: true, text: 'Need one material to save correctly' }],
-      checklist: [{ done: true, text: 'Need one checklist to save correctly' }],
+      materials: [],
+      checklist: [],
       repostable: 'Maybe',
       interest_level: null,
       updated_at: new Date().toISOString(),
@@ -117,9 +117,9 @@ export class ProjectFormComponent implements OnChanges {
     if (!model) return null;
     return {
       ...model,
-      seasons: [...model?.seasons],
+      seasons: [...(model.seasons ?? [])],
       materials: (model.materials ?? []).map((m) => ({ ...m })),
-      checklist: model.checklist.map((c) => ({ ...c })),
+      checklist: (model.checklist ?? []).map((c) => ({ ...c })),
     };
   }
 }
