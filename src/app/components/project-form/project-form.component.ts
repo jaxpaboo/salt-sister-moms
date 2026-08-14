@@ -45,7 +45,7 @@ export class ProjectFormComponent implements OnChanges {
   draft: Project = this.blank();
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['model'] || changes['visible']) {
+    if (changes['model'] || changes['visible'] || changes['isEditing']) {
       this.draft = this.clone(this.model) ?? this.blank();
       if (this.visible && !this.isEditing) {
         window.setTimeout(() => this.titleInput?.nativeElement.focus(), 0);

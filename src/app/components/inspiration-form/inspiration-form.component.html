@@ -1,0 +1,81 @@
+<div class="modal-backdrop" *ngIf="visible" (click)="onCancel()">
+  <div class="modal inspiration-form" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Edit inspiration -- ' + model?.name + ' (' + model?.inspiration_id + ')' : 'New Inspiration' }}</h3>
+      <button class="close-x-btn" type="button" (click)="onCancel()" aria-label="Close">×</button>
+    </div>
+
+    <form #inspirationForm="ngForm" (ngSubmit)="onSubmit(inspirationForm)" class="modal-body">
+      <div class="grid">
+        <label class="field full">
+          <span>Name</span>
+          <input
+            #nameInput
+            type="text"
+            name="name"
+            [(ngModel)]="draft.name"
+            required
+            maxlength="200"
+            placeholder="e.g. DIY Salt Dough Ornaments" />
+        </label>
+
+        <label class="field full">
+          <span>Comments</span>
+          <textarea
+            name="comments"
+            [(ngModel)]="draft.comments"
+            rows="4"
+            placeholder="What is this inspiration about?"></textarea>
+        </label>
+
+        <label class="field full">
+          <span>Image link</span>
+          <input
+            type="url"
+            name="image_link"
+            [(ngModel)]="draft.image_link"
+            placeholder="https://example.com/image.jpg" />
+        </label>
+
+        <label class="field full">
+          <span>Video link</span>
+          <input
+            type="url"
+            name="video_link"
+            [(ngModel)]="draft.video_link"
+            placeholder="https://youtube.com/watch?v=…" />
+        </label>
+
+        <label class="field full">
+          <span>Website link</span>
+          <input
+            type="url"
+            name="website_link"
+            [(ngModel)]="draft.website_link"
+            placeholder="https://example.com/…" />
+        </label>
+
+        <label class="field full">
+          <span>Materials</span>
+          <input
+            type="text"
+            name="materials"
+            [(ngModel)]="draft.materials"
+            placeholder="flour, salt, water, paint…" />
+        </label>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" (click)="onCancel()">Cancel</button>
+        <button class="btn btn-primary" type="submit">
+          {{ isEditing ? 'Save changes' : 'Create inspiration' }}
+        </button>
+        <button
+          *ngIf="isEditing"
+          class="btn btn-danger"
+          type="button"
+          (click)="onDelete()">Delete</button>
+      </div>
+    </form>
+  </div>
+</div>

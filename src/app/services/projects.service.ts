@@ -44,7 +44,7 @@ export class ProjectsService {
       }));
       this.projects.set(normalizedProjects);
       this.sponsors.set(sponsors);
-      this.inspirations.set(inspirations);
+      this.inspirations.set(this.normalizeInspirations(inspirations));
     } catch (e) {
       this.error.set(this.toMessage(e));
     } finally {
@@ -84,6 +84,19 @@ export class ProjectsService {
       .map((s) => s.trim())
       .filter((s) => s.length > 0)
       .map((text) => ({ text, done: false }));
+  }
+
+  /** Ensure inspiration fields default to empty strings when missing. */
+  private normalizeInspirations(inspirations: Inspiration[]): Inspiration[] {
+    return inspirations.map((i) => ({
+      ...i,
+      name: i.name ?? '',
+      image_link: i.image_link ?? '',
+      video_link: i.video_link ?? '',
+      website_link: i.website_link ?? '',
+      comments: i.comments ?? '',
+      materials: i.materials ?? '',
+    }));
   }
 
   async createProject(partial: Partial<Project> = {}): Promise<Project> {
@@ -165,18 +178,42 @@ export class ProjectsService {
 
   async createSponsor(input: Omit<Sponsor, 'sponsor_id'>): Promise<Sponsor> {
     const id = `spon_${Date.now().toString(36)}`;
-    const sponsor: Sponsor = { sponsor_id: id, ...input };
+    const sponsor: Sponsor = { ...input, sponsor_id: id };
     await this.db.create<Sponsor>(TABLE.sponsors, id, sponsor);
     this.sponsors.update((list) => [...list, sponsor]);
     return sponsor;
   }
 
+  async updateSponsor(id: string, patch: Partial<Sponsor>): Promise<void> {
+    await this.db.update<Sponsor>(TABLE.sponsors, id, patch);
+    this.sponsors.update((list) =>
+      list.map((s) => (s.sponsor_id === id ? { ...s, ...patch } : s)),
+    );
+  }
+
+  async deleteSponsor(id: string): Promise<void> {
+    await this.db.remove(TABLE.sponsors, id);
+    this.sponsors.update((list) => list.filter((s) => s.sponsor_id !== id));
+  }
+
   async createInspiration(input: Omit<Inspiration, 'inspiration_id'>): Promise<Inspiration> {
     const id = `insp_${Date.now().toString(36)}`;
-    const inspiration: Inspiration = { inspiration_id: id, ...input };
+    const inspiration: Inspiration = { ...input, inspiration_id: id };
     await this.db.create<Inspiration>(TABLE.inspirations, id, inspiration);
     this.inspirations.update((list) => [...list, inspiration]);
     return inspiration;
+  }
+
+  async updateInspiration(id: string, patch: Partial<Inspiration>): Promise<void> {
+    await this.db.update<Inspiration>(TABLE.inspirations, id, patch);
+    this.inspirations.update((list) =>
+      list.map((i) => (i.inspiration_id === id ? { ...i, ...patch } : i)),
+    );
+  }
+
+  async deleteInspiration(id: string): Promise<void> {
+    await this.db.remove(TABLE.inspirations, id);
+    this.inspirations.update((list) => list.filter((i) => i.inspiration_id !== id));
   }
 
   private toMessage(err: unknown): string {

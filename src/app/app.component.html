@@ -1,16 +1,19 @@
 <app-header
   [isAuthenticated]="auth.isAuthenticated()"
   [email]="auth.email()"
-  [selectedTab]="selectedTab"
+  [mainTab]="mainTab"
+  [subTab]="subTab"
   [tabs]="tabs"
   [version]="appVersion"
   [showTrashTab]="showTrash"
   (loginClick)="openLogin()"
   (logoutClick)="logout()"
   (newProjectClick)="openNew()"
-  (tabSelected)="selectTab($event)"
+  (newInspirationClick)="openNewInspiration()"
+  (newSponsorClick)="openNewSponsor()"
+  (mainTabSelected)="selectMainTab($event)"
+  (subTabSelected)="selectSubTab($event)"
   (sponsorsClick)="openSponsors()"
-  (inspirationsClick)="openInspirations()"
   (trashClick)="openTrash()"
 ></app-header>
 
@@ -33,25 +36,64 @@
       </div>
     </div>
 
-    <ng-container *ngIf="showTrash; else mainList">
-      <app-project-list
-        [projects]="projects.trashedProjects()"
-        [isAuthenticated]="auth.isAuthenticated()"
-        [emptyMessage]="emptyMessage()"
-        [showRestore]="true"
-        (edit)="openEdit($event)"
-        (delete)="confirmDelete($event)"
-        (restore)="restoreProject($event)">
-      </app-project-list>
+    <!-- Projects view -->
+    <ng-container *ngIf="mainTab === 'projects' && !showTrash; else inspirationsOrSponsors">
+      <ng-container *ngIf="showTrash; else mainList">
+        <app-project-list
+          [projects]="projects.trashedProjects()"
+          [isAuthenticated]="auth.isAuthenticated()"
+          [emptyMessage]="emptyMessage()"
+          [showRestore]="true"
+          (edit)="openEdit($event)"
+          (delete)="confirmDelete($event)"
+          (restore)="restoreProject($event)">
+        </app-project-list>
+      </ng-container>
+      <ng-template #mainList>
+        <app-project-list
+          [projects]="filteredProjects()"
+          [isAuthenticated]="auth.isAuthenticated()"
+          [emptyMessage]="emptyMessage()"
+          (edit)="openEdit($event)"
+          (delete)="confirmDelete($event)">
+        </app-project-list>
+      </ng-template>
     </ng-container>
-    <ng-template #mainList>
-      <app-project-list
-        [projects]="filteredProjects()"
-        [isAuthenticated]="auth.isAuthenticated()"
-        [emptyMessage]="emptyMessage()"
-        (edit)="openEdit($event)"
-        (delete)="confirmDelete($event)">
-      </app-project-list>
+
+    <!-- Inspirations view -->
+    <ng-template #inspirationsOrSponsors>
+      <ng-container *ngIf="mainTab === 'inspirations'; else sponsorsView">
+        <div class="inspiration-grid" *ngIf="filteredInspirations().length; else inspirationEmpty">
+          <app-inspiration-card
+            *ngFor="let i of filteredInspirations(); trackBy: trackInspirationById"
+            [inspiration]="i"
+            [isAuthenticated]="auth.isAuthenticated()"
+            (edit)="openEditInspiration($event)"
+            (delete)="onDeleteInspiration($event)">
+          </app-inspiration-card>
+        </div>
+        <ng-template #inspirationEmpty>
+          <div class="empty">
+            <p>{{ emptyMessage() }}</p>
+          </div>
+        </ng-template>
+      </ng-container>
+      <ng-template #sponsorsView>
+        <div class="sponsor-grid" *ngIf="projects.sponsors().length; else sponsorEmpty">
+          <app-sponsor-card
+            *ngFor="let s of projects.sponsors(); trackBy: trackSponsorById"
+            [sponsor]="s"
+            [isAuthenticated]="auth.isAuthenticated()"
+            (edit)="openEditSponsor($event)"
+            (delete)="onDeleteSponsor($event)">
+          </app-sponsor-card>
+        </div>
+        <ng-template #sponsorEmpty>
+          <div class="empty">
+            <p>No sponsors yet. Tap "+ New Sponsor" to add one.</p>
+          </div>
+        </ng-template>
+      </ng-template>
     </ng-template>
   </section>
 </main>
@@ -78,6 +120,24 @@
   (cancel)="closeForm()"
   (delete)="onDelete($event)">
 </app-project-form>
+
+<app-inspiration-form
+  [visible]="showInspirationForm"
+  [model]="editingInspiration"
+  [isEditing]="isEditingInspiration"
+  (save)="onSaveInspiration($event)"
+  (cancel)="closeInspirationForm()"
+  (delete)="onDeleteInspiration($event)">
+</app-inspiration-form>
+
+<app-sponsor-form
+  [visible]="showSponsorForm"
+  [model]="editingSponsor"
+  [isEditing]="isEditingSponsor"
+  (save)="onSaveSponsor($event)"
+  (cancel)="closeSponsorForm()"
+  (delete)="onDeleteSponsor($event)">
+</app-sponsor-form>
 
 <app-confirmation-toast
   [visible]="showConfirm"

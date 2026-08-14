@@ -1,0 +1,30 @@
+<article class="inspiration-card">
+  <div class="thumbnail">
+    <img *ngIf="isImage" [src]="inspiration.image_link" [alt]="inspiration.name" />
+    <div *ngIf="isVideo" class="video-placeholder">
+      <span class="video-icon">▶</span>
+      <span class="video-url">{{ inspiration.video_link }}</span>
+    </div>
+    <div *ngIf="isWebsite" class="website-placeholder">
+      <span class="website-icon">🔗</span>
+      <span class="website-url">{{ inspiration.website_link }}</span>
+    </div>
+    <div *ngIf="!thumbnailUrl" class="no-thumbnail">
+      <span>No preview available</span>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <h3 class="card-title">{{ inspiration.name || 'Untitled' }}</h3>
+    <p class="card-comments" *ngIf="inspiration.comments">{{ inspiration.comments }}</p>
+    <p class="card-materials" *ngIf="inspiration.materials">
+      <span class="meta-label">Materials:</span>
+      {{ inspiration.materials }}
+    </p>
+  </div>
+
+  <footer class="card-footer" *ngIf="isAuthenticated">
+    <button class="icon-btn" type="button" (click)="onEdit($event)" title="Edit" aria-label="Edit">✎</button>
+    <button class="icon-btn danger" type="button" (click)="onDelete($event)" title="Delete" aria-label="Delete">🗑</button>
+  </footer>
+</article>

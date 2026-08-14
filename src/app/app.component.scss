@@ -72,6 +72,18 @@
   font-size: 0.85rem;
 }
 
+.inspiration-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.sponsor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
 @media (max-width: 600px) {
   .page {
     padding: 1rem 0.85rem 2rem;

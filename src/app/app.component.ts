@@ -5,15 +5,21 @@ import { FormsModule, NgForm } from '@angular/forms';
 
 import packageJson from '../../package.json';
 
-import { AppHeaderComponent, DashboardTab } from './components/app-header/app-header.component';
+import { AppHeaderComponent, MainTab, TabConfig } from './components/app-header/app-header.component';
 import { LoginModalComponent } from './components/login-modal/login-modal.component';
 import { ProjectFormComponent } from './components/project-form/project-form.component';
 import { ProjectListComponent } from './components/project-list/project-list.component';
+import { InspirationCardComponent } from './components/inspiration-card/inspiration-card.component';
+import { InspirationFormComponent } from './components/inspiration-form/inspiration-form.component';
+import { SponsorCardComponent } from './components/sponsor-card/sponsor-card.component';
+import { SponsorFormComponent } from './components/sponsor-form/sponsor-form.component';
 import { ConfirmationToastComponent } from './components/confirmation-toast/confirmation-toast.component';
 
 import { AuthService } from './services/auth.service';
 import { ProjectsService } from './services/projects.service';
 import { Project } from './models/project';
+import { Inspiration } from './models/inspiration';
+import { Sponsor } from './models/sponsor';
 
 @Component({
   selector: 'app-root',
@@ -25,6 +31,10 @@ import { Project } from './models/project';
     LoginModalComponent,
     ProjectFormComponent,
     ProjectListComponent,
+    InspirationCardComponent,
+    InspirationFormComponent,
+    SponsorCardComponent,
+    SponsorFormComponent,
     ConfirmationToastComponent,
   ],
   templateUrl: './app.component.html',
@@ -36,13 +46,30 @@ export class AppComponent implements OnInit {
   readonly auth = inject(AuthService);
   readonly projects = inject(ProjectsService);
 
-  readonly tabs: Array<{ label: string; value: DashboardTab }> = [
-    { label: 'All', value: 'all' },
-    { label: 'Active', value: 'active' },
-    { label: 'Archive', value: 'archive' },
+  readonly tabs: TabConfig[] = [
+    {
+      label: 'Projects',
+      value: 'projects',
+      subTabs: [
+        { label: 'All', value: 'all' },
+        { label: 'Active', value: 'active' },
+        { label: 'Archive', value: 'archive' },
+      ],
+    },
+    {
+      label: 'Inspirations',
+      value: 'inspirations',
+      subTabs: [{ label: 'All', value: 'all' }],
+    },
+    {
+      label: 'Sponsors',
+      value: 'sponsors',
+      subTabs: [{ label: 'All', value: 'all' }],
+    },
   ];
 
-  selectedTab: DashboardTab = 'all';
+  mainTab: MainTab = 'projects';
+  subTab: string = 'all';
 
   showLogin = false;
   loginEmail = '';
@@ -52,21 +79,24 @@ export class AppComponent implements OnInit {
   showForm = false;
   editingProject: Project | null = null;
 
+  showInspirationForm = false;
+  editingInspiration: Inspiration | null = null;
+  isEditingInspiration = false;
+
+  showSponsorForm = false;
+  editingSponsor: Sponsor | null = null;
+  isEditingSponsor = false;
+
   showConfirm = false;
   confirmMessage = '';
   private pendingDeleteId: string | null = null;
+  private pendingDeleteType: 'project' | 'inspiration' | 'sponsor' = 'project';
 
   // Trash view state
   showTrash = false;
 
   // Search
   searchQuery = signal('');
-
-  // Side-screen placeholders. The Sponsors / Inspirations tabs fire these so
-  // the header isn't a dead control, but the management UIs are a future task.
-  // We surface a friendly toast via `confirmMessage` so it doesn't look broken.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private openingSideScreen = '';
 
   constructor() {
     // effect() must be called inside an injection context — the constructor
@@ -94,10 +124,13 @@ export class AppComponent implements OnInit {
     this.searchQuery.set(value);
   }
 
+  trackInspirationById = (_: number, inspiration: Inspiration): string => inspiration.inspiration_id;
+  trackSponsorById = (_: number, sponsor: Sponsor): string => sponsor.sponsor_id;
+
   // Derived: which projects show on the dashboard given the selected tab.
   readonly displayedProjects = computed(() => {
     const all = this.projects.activeProjects();
-    switch (this.selectedTab) {
+    switch (this.subTab) {
       case 'active':
         return all.filter((p) => p.status !== 'Archive');
       case 'archive':
@@ -121,17 +154,39 @@ export class AppComponent implements OnInit {
     });
   });
 
+  // Derived: filtered inspirations for search.
+  readonly filteredInspirations = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    if (!q) return this.projects.inspirations();
+    return this.projects.inspirations().filter((i) => {
+      return (
+        i.name.toLowerCase().includes(q) ||
+        i.comments.toLowerCase().includes(q) ||
+        i.materials.toLowerCase().includes(q)
+      );
+    });
+  });
+
   headTitle(): string {
     if (this.showTrash) {
       return 'Trash';
     }
-    switch (this.selectedTab) {
-      case 'active':
-        return 'Active ideas';
-      case 'archive':
-        return 'Archive';
+    switch (this.mainTab) {
+      case 'projects':
+        switch (this.subTab) {
+          case 'active':
+            return 'Active ideas';
+          case 'archive':
+            return 'Archive';
+          default:
+            return 'All ideas';
+        }
+      case 'inspirations':
+        return 'Inspirations';
+      case 'sponsors':
+        return 'Sponsors';
       default:
-        return 'All ideas';
+        return 'Salty Ideas';
     }
   }
 
@@ -143,8 +198,19 @@ export class AppComponent implements OnInit {
     if (!this.auth.isAuthenticated()) {
       return 'Browse the demo. Sign in to view and edit your ideas.';
     }
-    const count = this.filteredProjects().length;
-    return `${count} ${count === 1 ? 'idea' : 'ideas'} on this board.`;
+    if (this.mainTab === 'projects') {
+      const count = this.filteredProjects().length;
+      return `${count} ${count === 1 ? 'idea' : 'ideas'} on this board.`;
+    }
+    if (this.mainTab === 'inspirations') {
+      const count = this.filteredInspirations().length;
+      return `${count} ${count === 1 ? 'inspiration' : 'inspirations'} saved.`;
+    }
+    if (this.mainTab === 'sponsors') {
+      const count = this.projects.sponsors().length;
+      return `${count} ${count === 1 ? 'sponsor' : 'sponsors'} listed.`;
+    }
+    return 'Coming soon.';
   }
 
   emptyMessage(): string {
@@ -154,15 +220,29 @@ export class AppComponent implements OnInit {
     if (!this.auth.isAuthenticated()) {
       return 'Sign in to load your ideas from Firebase.';
     }
-    if (this.selectedTab === 'archive') {
-      return 'No archived ideas. Mark an idea as “Archive” to tuck it away.';
+    if (this.mainTab === 'projects') {
+      if (this.subTab === 'archive') {
+        return 'No archived ideas. Mark an idea as “Archive” to tuck it away.';
+      }
+      return 'No ideas yet. Tap “+ New Idea” to capture one.';
     }
-    return 'No ideas yet. Tap “+ New Idea” to capture one.';
+    if (this.mainTab === 'inspirations') {
+      return 'No inspirations yet. Tap “+ New Inspiration” to add one.';
+    }
+    if (this.mainTab === 'sponsors') {
+      return 'No sponsors yet. Tap “+ New Sponsor” to add one.';
+    }
+    return 'Coming soon.';
   }
 
-  selectTab(tab: DashboardTab): void {
-    this.selectedTab = tab;
+  selectMainTab(tab: MainTab): void {
+    this.mainTab = tab;
     this.showTrash = false;
+    this.searchQuery.set('');
+  }
+
+  selectSubTab(sub: string): void {
+    this.subTab = sub;
     this.searchQuery.set('');
   }
 
@@ -211,11 +291,8 @@ export class AppComponent implements OnInit {
     this.closeForm();
   }
 
-  // --- New / edit / save flow --------------------------------------------
+  // --- New / edit / save flow (Projects) ---------------------------------
 
-  // Open the form with no model. The row isn't created in Firebase until
-  // the user clicks Save — that way the Delete button can stay hidden
-  // until the project actually exists.
   openNew(): void {
     if (!this.auth.isAuthenticated()) {
       this.openLogin();
@@ -256,23 +333,133 @@ export class AppComponent implements OnInit {
     this.editingProject = null;
   }
 
+  // --- New / edit / save flow (Inspirations) -----------------------------
+
+  openNewInspiration(): void {
+    if (!this.auth.isAuthenticated()) {
+      this.openLogin();
+      return;
+    }
+    this.editingInspiration = null;
+    this.isEditingInspiration = false;
+    this.showInspirationForm = true;
+  }
+
+  openEditInspiration(inspiration: Inspiration): void {
+    if (!this.auth.isAuthenticated()) {
+      this.openLogin();
+      return;
+    }
+    this.editingInspiration = inspiration;
+    this.isEditingInspiration = true;
+    this.showInspirationForm = true;
+  }
+
+  closeInspirationForm(): void {
+    this.showInspirationForm = false;
+    this.editingInspiration = null;
+    this.isEditingInspiration = false;
+  }
+
+  async onSaveInspiration(inspiration: Inspiration): Promise<void> {
+    if (inspiration.inspiration_id) {
+      // Existing inspiration — update in place.
+      await this.projects.updateInspiration(inspiration.inspiration_id, inspiration);
+    } else {
+      // Brand-new inspiration — create a new document.
+      const created = await this.projects.createInspiration(inspiration);
+      this.editingInspiration = created;
+    }
+    this.showInspirationForm = false;
+    this.editingInspiration = null;
+    this.isEditingInspiration = false;
+  }
+
+  async onDeleteInspiration(inspiration: Inspiration): Promise<void> {
+    this.showInspirationForm = false;
+    this.editingInspiration = null;
+    this.pendingDeleteId = inspiration.inspiration_id;
+    this.pendingDeleteType = 'inspiration';
+    this.confirmMessage = `Delete inspiration <b>${inspiration.name}</b>?<br><br><i>This cannot be undone.</i>`;
+    this.showConfirm = true;
+  }
+
+  // --- New / edit / save flow (Sponsors) ---------------------------------
+
+  openNewSponsor(): void {
+    if (!this.auth.isAuthenticated()) {
+      this.openLogin();
+      return;
+    }
+    this.editingSponsor = null;
+    this.isEditingSponsor = false;
+    this.showSponsorForm = true;
+  }
+
+  openEditSponsor(sponsor: Sponsor): void {
+    if (!this.auth.isAuthenticated()) {
+      this.openLogin();
+      return;
+    }
+    this.editingSponsor = sponsor;
+    this.isEditingSponsor = true;
+    this.showSponsorForm = true;
+  }
+
+  closeSponsorForm(): void {
+    this.showSponsorForm = false;
+    this.editingSponsor = null;
+    this.isEditingSponsor = false;
+  }
+
+  async onSaveSponsor(sponsor: Sponsor): Promise<void> {
+    if (sponsor.sponsor_id) {
+      // Existing sponsor — update in place.
+      await this.projects.updateSponsor(sponsor.sponsor_id, sponsor);
+    } else {
+      // Brand-new sponsor — create a new document.
+      const created = await this.projects.createSponsor(sponsor);
+      this.editingSponsor = created;
+    }
+    this.showSponsorForm = false;
+    this.editingSponsor = null;
+    this.isEditingSponsor = false;
+  }
+
+  async onDeleteSponsor(sponsor: Sponsor): Promise<void> {
+    this.showSponsorForm = false;
+    this.editingSponsor = null;
+    this.pendingDeleteId = sponsor.sponsor_id;
+    this.pendingDeleteType = 'sponsor';
+    this.confirmMessage = `Delete sponsor <b>${sponsor.name}</b>?<br><br><i>This cannot be undone.</i>`;
+    this.showConfirm = true;
+  }
+
   // --- Delete with confirmation ------------------------------------------
 
   confirmDelete(project: Project): void {
     this.pendingDeleteId = project.project_id;
+    this.pendingDeleteType = 'project';
     this.confirmMessage = `Move idea <b>${project.idea_title}</b> to trash?<br><br><i>You can restore it later from the Trash view.</i>`;
     this.showConfirm = true;
   }
 
   async doDelete(): Promise<void> {
     if (this.pendingDeleteId) {
-      await this.projects.deleteProject(this.pendingDeleteId);
+      if (this.pendingDeleteType === 'project') {
+        await this.projects.deleteProject(this.pendingDeleteId);
+      } else if (this.pendingDeleteType === 'inspiration') {
+        await this.projects.deleteInspiration(this.pendingDeleteId);
+      } else {
+        await this.projects.deleteSponsor(this.pendingDeleteId);
+      }
     }
     this.cancelDelete();
   }
 
   cancelDelete(): void {
     this.pendingDeleteId = null;
+    this.pendingDeleteType = 'project';
     this.showConfirm = false;
     this.confirmMessage = '';
   }
@@ -285,17 +472,10 @@ export class AppComponent implements OnInit {
     this.confirmDelete(project);
   }
 
-  // --- Stub side-screens (Sponsors / Inspirations) -----------------------
-  // These are intentional placeholders — added the header entries so the
-  // surface area is consistent, but the management screens are a follow-up.
+  // --- Stub side-screens (Sponsors) --------------------------------------
 
   openSponsors(): void {
     this.showConfirm = true;
     this.confirmMessage = 'Sponsors manager coming soon — wire it up next.';
-  }
-
-  openInspirations(): void {
-    this.showConfirm = true;
-    this.confirmMessage = 'Inspirations manager coming soon — wire it up next.';
   }
 }

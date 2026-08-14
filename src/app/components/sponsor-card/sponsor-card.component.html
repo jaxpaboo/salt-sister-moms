@@ -1,0 +1,15 @@
+<article class="sponsor-card">
+  <div class="card-body">
+    <h3 class="card-title">{{ sponsor.name || 'Untitled sponsor' }}</h3>
+    <p class="card-product" *ngIf="sponsor.product"><span class="meta-label">Product:</span> {{ sponsor.product }}</p>
+    <p class="card-description" *ngIf="sponsor.description">{{ sponsor.description }}</p>
+    <p class="card-contact" *ngIf="sponsor.contact"><span class="meta-label">Contact:</span> {{ sponsor.contact }}</p>
+    <p class="card-email" *ngIf="sponsor.email"><span class="meta-label">Email:</span> {{ sponsor.email }}</p>
+    <p class="card-phone" *ngIf="sponsor.phone_number"><span class="meta-label">Phone:</span> {{ sponsor.phone_number }}</p>
+  </div>
+
+  <footer class="card-footer" *ngIf="isAuthenticated">
+    <button class="icon-btn" type="button" (click)="onEdit($event)" title="Edit" aria-label="Edit">✎</button>
+    <button class="icon-btn danger" type="button" (click)="onDelete($event)" title="Delete" aria-label="Delete">🗑</button>
+  </footer>
+</article>

@@ -51,6 +51,29 @@
   }
 }
 
+.sub-nav {
+  display: flex;
+  gap: 0.25rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.nav-sub-tab {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 0.8rem;
+
+  &.active {
+    background: #e0f2f1;
+    color: #0f766e;
+    border-color: #a7f3d0;
+  }
+}
+
 .header-controls {
   display: flex;
   align-items: center;

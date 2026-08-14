@@ -1,0 +1,81 @@
+<div class="modal-backdrop" *ngIf="visible" (click)="onCancel()">
+  <div class="modal sponsor-form" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Edit sponsor -- ' + model?.name + ' (' + model?.sponsor_id + ')' : 'New Sponsor' }}</h3>
+      <button class="close-x-btn" type="button" (click)="onCancel()" aria-label="Close">×</button>
+    </div>
+
+    <form #sponsorForm="ngForm" (ngSubmit)="onSubmit(sponsorForm)" class="modal-body">
+      <div class="grid">
+        <label class="field full">
+          <span>Name</span>
+          <input
+            #nameInput
+            type="text"
+            name="name"
+            [(ngModel)]="draft.name"
+            required
+            maxlength="200"
+            placeholder="e.g. Crafty Corner Supplies" />
+        </label>
+
+        <label class="field full">
+          <span>Product</span>
+          <input
+            type="text"
+            name="product"
+            [(ngModel)]="draft.product"
+            placeholder="e.g. Salt, paint, molds…" />
+        </label>
+
+        <label class="field full">
+          <span>Description</span>
+          <textarea
+            name="description"
+            [(ngModel)]="draft.description"
+            rows="4"
+            placeholder="What does this sponsor offer?"></textarea>
+        </label>
+
+        <label class="field full">
+          <span>Contact info</span>
+          <input
+            type="text"
+            name="contact"
+            [(ngModel)]="draft.contact"
+            placeholder="e.g. Jane Doe, Marketing Director" />
+        </label>
+
+        <label class="field full">
+          <span>Email</span>
+          <input
+            type="email"
+            name="email"
+            [(ngModel)]="draft.email"
+            placeholder="contact@example.com" />
+        </label>
+
+        <label class="field full">
+          <span>Phone number</span>
+          <input
+            type="tel"
+            name="phone_number"
+            [(ngModel)]="draft.phone_number"
+            placeholder="+1 (555) 123-4567" />
+        </label>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" (click)="onCancel()">Cancel</button>
+        <button class="btn btn-primary" type="submit">
+          {{ isEditing ? 'Save changes' : 'Create sponsor' }}
+        </button>
+        <button
+          *ngIf="isEditing"
+          class="btn btn-danger"
+          type="button"
+          (click)="onDelete()">Delete</button>
+      </div>
+    </form>
+  </div>
+</div>

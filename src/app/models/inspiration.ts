@@ -3,6 +3,7 @@ export interface Inspiration {
   name: string;
   image_link: string;
   video_link: string;
+  website_link: string;
   comments: string;
   materials: string;
 }

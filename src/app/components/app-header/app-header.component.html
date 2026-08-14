@@ -9,24 +9,32 @@
       *ngFor="let tab of tabs"
       class="nav-tab"
       type="button"
-      [class.active]="selectedTab === tab.value && !showTrashTab"
-      (click)="tabSelected.emit(tab.value)">
+      [class.active]="mainTab === tab.value"
+      (click)="mainTabSelected.emit(tab.value)">
       {{ tab.label }}
     </button>
+  </nav>
+
+  <nav class="sub-nav" *ngIf="isAuthenticated && currentTabConfig()?.subTabs?.length">
     <button
-      *ngIf="showTrashTab"
-      class="nav-tab active"
+      *ngFor="let sub of currentTabConfig()?.subTabs"
+      class="nav-sub-tab"
       type="button"
-      (click)="trashClick.emit()">
-      Trash
+      [class.active]="subTab === sub.value"
+      (click)="subTabSelected.emit(sub.value)">
+      {{ sub.label }}
     </button>
   </nav>
 
   <div class="header-controls">
     <ng-container *ngIf="isAuthenticated; else loggedOut">
-      <button class="btn btn-outline" type="button" (click)="sponsorsClick.emit()">Sponsors</button>
-      <button class="btn btn-outline" type="button" (click)="inspirationsClick.emit()">Inspirations</button>
-      <button class="btn btn-success" type="button" (click)="newProjectClick.emit()">+ New Idea</button>
+      <ng-container *ngIf="mainTab === 'projects'; else otherTab">
+        <button class="btn btn-success" type="button" (click)="newProjectClick.emit()">+ New Idea</button>
+      </ng-container>
+      <ng-template #otherTab>
+        <button *ngIf="mainTab === 'inspirations'" class="btn btn-success" type="button" (click)="newInspirationClick.emit()">+ New Inspiration</button>
+        <button *ngIf="mainTab === 'sponsors'" class="btn btn-success" type="button" (click)="newSponsorClick.emit()">+ New Sponsor</button>
+      </ng-template>
       <span class="who">{{ email }}</span>
       <div class="settings-container" (click)="$event.stopPropagation()">
         <button class="btn btn-icon settings-btn" type="button" (click)="toggleSettings()" title="Settings" aria-label="Settings">⚙</button>
