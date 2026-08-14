@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, OnInit, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { Inspiration } from '../../models/inspiration';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-inspiration-card',
@@ -9,12 +10,22 @@ import { Inspiration } from '../../models/inspiration';
   templateUrl: './inspiration-card.component.html',
   styleUrl: './inspiration-card.component.scss',
 })
-export class InspirationCardComponent {
+export class InspirationCardComponent implements OnInit {
   @Input({ required: true }) inspiration!: Inspiration;
   @Input() isAuthenticated = false;
 
   @Output() edit = new EventEmitter<Inspiration>();
   @Output() delete = new EventEmitter<Inspiration>();
+
+  youtubeEmbedUrl!: SafeResourceUrl;
+
+  constructor(private sanitizer: DomSanitizer) {}
+
+  ngOnInit(): void {
+    this.youtubeEmbedUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      this.inspiration.video_link_embedded || this.inspiration.video_link || ''
+    );
+  }
 
   get thumbnailUrl(): string {
     return this.inspiration.image_link || this.inspiration.video_link || this.inspiration.website_link || '';

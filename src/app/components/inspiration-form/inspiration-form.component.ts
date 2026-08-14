@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 
 import { Inspiration } from '../../models/inspiration';
+import { buildYoutubeEmbedUrl } from '../../utils/youtube';
 
 @Component({
   selector: 'app-inspiration-form',
@@ -37,11 +38,13 @@ export class InspirationFormComponent implements OnChanges {
       form.control.markAllAsTouched();
       return;
     }
+    const videoLink = (this.draft.video_link ?? '').trim();
     const cleaned: Inspiration = {
       ...this.draft,
       name: (this.draft.name ?? '').trim(),
       image_link: (this.draft.image_link ?? '').trim(),
-      video_link: (this.draft.video_link ?? '').trim(),
+      video_link: videoLink,
+      video_link_embedded: buildYoutubeEmbedUrl(videoLink) ?? '',
       website_link: (this.draft.website_link ?? '').trim(),
       comments: (this.draft.comments ?? '').trim(),
       materials: (this.draft.materials ?? '').trim(),
@@ -68,6 +71,7 @@ export class InspirationFormComponent implements OnChanges {
       website_link: '',
       comments: '',
       materials: '',
+      video_link_embedded: '',
     };
   }
 

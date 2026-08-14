@@ -93,6 +93,7 @@ export class ProjectsService {
       name: i.name ?? '',
       image_link: i.image_link ?? '',
       video_link: i.video_link ?? '',
+      video_link_embedded: i.video_link_embedded ?? '',
       website_link: i.website_link ?? '',
       comments: i.comments ?? '',
       materials: i.materials ?? '',

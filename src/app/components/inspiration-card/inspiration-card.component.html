@@ -1,7 +1,16 @@
 <article class="inspiration-card">
   <div class="thumbnail">
     <img *ngIf="isImage" [src]="inspiration.image_link" [alt]="inspiration.name" />
-    <div *ngIf="isVideo" class="video-placeholder">
+    <div *ngIf="isVideo && youtubeEmbedUrl" class="video-embed">
+      <iframe
+        [src]="youtubeEmbedUrl"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        title="YouTube video player"
+      ></iframe>
+    </div>
+    <div *ngIf="isVideo && !youtubeEmbedUrl" class="video-placeholder">
       <span class="video-icon">▶</span>
       <span class="video-url">{{ inspiration.video_link }}</span>
     </div>
