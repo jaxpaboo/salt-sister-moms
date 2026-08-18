@@ -3,6 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { ChecklistItem, Project } from '../models/project';
 import { Inspiration } from '../models/inspiration';
 import { Sponsor } from '../models/sponsor';
+import { Configuration } from '../models/configuration';
 import { nextProjectId } from '../models/project-id';
 import { DbService } from './db.service';
 
@@ -10,6 +11,7 @@ const TABLE = {
   projects: 'projects',
   sponsors: 'sponsors',
   inspirations: 'inspirations',
+  configurations: 'configurations',
 } as const;
 
 @Injectable({ providedIn: 'root' })
@@ -19,6 +21,7 @@ export class ProjectsService {
   readonly projects = signal<Project[]>([]);
   readonly sponsors = signal<Sponsor[]>([]);
   readonly inspirations = signal<Inspiration[]>([]);
+  readonly configurations = signal<Configuration[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string>('');
 
@@ -30,10 +33,11 @@ export class ProjectsService {
     this.loading.set(true);
     this.error.set('');
     try {
-      const [projects, sponsors, inspirations] = await Promise.all([
+      const [projects, sponsors, inspirations, configurations] = await Promise.all([
         this.db.list<Project>(TABLE.projects),
         this.db.list<Sponsor>(TABLE.sponsors),
         this.db.list<Inspiration>(TABLE.inspirations),
+        this.db.list<Configuration>(TABLE.configurations),
       ]);
       const migratedProjects = await this.migrateMaterials(projects);
       const normalizedProjects = migratedProjects.map((p) => ({
@@ -45,6 +49,7 @@ export class ProjectsService {
       this.projects.set(normalizedProjects);
       this.sponsors.set(sponsors);
       this.inspirations.set(this.normalizeInspirations(inspirations));
+      this.configurations.set(this.normalizeConfigurations(configurations));
     } catch (e) {
       this.error.set(this.toMessage(e));
     } finally {
@@ -97,6 +102,16 @@ export class ProjectsService {
       website_link: i.website_link ?? '',
       comments: i.comments ?? '',
       materials: i.materials ?? '',
+    }));
+  }
+
+  /** Ensure configuration fields default to empty strings when missing. */
+  private normalizeConfigurations(configurations: Configuration[]): Configuration[] {
+    return configurations.map((c) => ({
+      ...c,
+      configuration_name: c.configuration_name ?? '',
+      configuration_fieldname: c.configuration_fieldname ?? '',
+      configuration_values: c.configuration_values ?? '',
     }));
   }
 
@@ -215,6 +230,40 @@ export class ProjectsService {
   async deleteInspiration(id: string): Promise<void> {
     await this.db.remove(TABLE.inspirations, id);
     this.inspirations.update((list) => list.filter((i) => i.inspiration_id !== id));
+  }
+
+  // --- Configuration CRUD --------------------------------------------------
+
+  /** Distinct configuration names, sorted, for the dropdown. */
+  configurationNames(): string[] {
+    const names = new Set(this.configurations().map((c) => c.configuration_name));
+    return [...names].sort((a, b) => a.localeCompare(b));
+  }
+
+  async createConfiguration(input: Omit<Configuration, 'configuration_id'>): Promise<Configuration> {
+    const id = `conf_${Date.now().toString(36)}`;
+    const now = new Date().toISOString();
+    const configuration: Configuration = {
+      ...input,
+      configuration_id: id,
+      updated_at: now,
+    };
+    await this.db.create<Configuration>(TABLE.configurations, id, configuration);
+    this.configurations.update((list) => [...list, configuration]);
+    return configuration;
+  }
+
+  async updateConfiguration(id: string, patch: Partial<Configuration>): Promise<void> {
+    const updated = { ...patch, updated_at: new Date().toISOString() };
+    await this.db.update<Configuration>(TABLE.configurations, id, updated);
+    this.configurations.update((list) =>
+      list.map((c) => (c.configuration_id === id ? { ...c, ...updated } : c)),
+    );
+  }
+
+  async deleteConfiguration(id: string): Promise<void> {
+    await this.db.remove(TABLE.configurations, id);
+    this.configurations.update((list) => list.filter((c) => c.configuration_id !== id));
   }
 
   private toMessage(err: unknown): string {

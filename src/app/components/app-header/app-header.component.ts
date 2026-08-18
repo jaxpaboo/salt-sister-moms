@@ -35,6 +35,7 @@ export class AppHeaderComponent {
   @Output() sponsorsClick = new EventEmitter<void>();
   @Output() inspirationsClick = new EventEmitter<void>();
   @Output() trashClick = new EventEmitter<void>();
+  @Output() configurationClick = new EventEmitter<void>();
 
   settingsOpen = false;
 
@@ -58,5 +59,10 @@ export class AppHeaderComponent {
   onTrash(): void {
     this.closeSettings();
     this.trashClick.emit();
+  }
+
+  onConfiguration(): void {
+    this.closeSettings();
+    this.configurationClick.emit();
   }
 }

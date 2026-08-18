@@ -13,6 +13,7 @@ import { InspirationCardComponent } from './components/inspiration-card/inspirat
 import { InspirationFormComponent } from './components/inspiration-form/inspiration-form.component';
 import { SponsorCardComponent } from './components/sponsor-card/sponsor-card.component';
 import { SponsorFormComponent } from './components/sponsor-form/sponsor-form.component';
+import { ConfigurationFormComponent } from './components/configuration-form/configuration-form.component';
 import { ConfirmationToastComponent } from './components/confirmation-toast/confirmation-toast.component';
 
 import { AuthService } from './services/auth.service';
@@ -20,6 +21,7 @@ import { ProjectsService } from './services/projects.service';
 import { Project } from './models/project';
 import { Inspiration } from './models/inspiration';
 import { Sponsor } from './models/sponsor';
+import { Configuration } from './models/configuration';
 
 @Component({
   selector: 'app-root',
@@ -35,6 +37,7 @@ import { Sponsor } from './models/sponsor';
     InspirationFormComponent,
     SponsorCardComponent,
     SponsorFormComponent,
+    ConfigurationFormComponent,
     ConfirmationToastComponent,
   ],
   templateUrl: './app.component.html',
@@ -87,10 +90,13 @@ export class AppComponent implements OnInit {
   editingSponsor: Sponsor | null = null;
   isEditingSponsor = false;
 
+  showConfigurationForm = false;
+  editingConfiguration: Configuration | null = null;
+
   showConfirm = false;
   confirmMessage = '';
   private pendingDeleteId: string | null = null;
-  private pendingDeleteType: 'project' | 'inspiration' | 'sponsor' = 'project';
+  private pendingDeleteType: 'project' | 'inspiration' | 'sponsor' | 'configuration' = 'project';
 
   // Trash view state
   showTrash = false;
@@ -109,6 +115,7 @@ export class AppComponent implements OnInit {
         this.projects.projects.set([]);
         this.projects.sponsors.set([]);
         this.projects.inspirations.set([]);
+        this.projects.configurations.set([]);
       }
     });
   }
@@ -435,6 +442,44 @@ export class AppComponent implements OnInit {
     this.showConfirm = true;
   }
 
+  // --- Configuration flow ------------------------------------------------
+
+  openConfiguration(): void {
+    if (!this.auth.isAuthenticated()) {
+      this.openLogin();
+      return;
+    }
+    this.editingConfiguration = null;
+    this.showConfigurationForm = true;
+  }
+
+  closeConfigurationForm(): void {
+    this.showConfigurationForm = false;
+    this.editingConfiguration = null;
+  }
+
+  async onSaveConfiguration(config: Configuration): Promise<void> {
+    if (config.configuration_id) {
+      // Existing configuration — update in place.
+      await this.projects.updateConfiguration(config.configuration_id, config);
+    } else {
+      // Brand-new configuration — create a new document.
+      const created = await this.projects.createConfiguration(config);
+      this.editingConfiguration = created;
+    }
+    this.showConfigurationForm = false;
+    this.editingConfiguration = null;
+  }
+
+  async onDeleteConfiguration(config: Configuration): Promise<void> {
+    this.showConfigurationForm = false;
+    this.editingConfiguration = null;
+    this.pendingDeleteId = config.configuration_id;
+    this.pendingDeleteType = 'configuration';
+    this.confirmMessage = `Delete configuration <b>${config.configuration_name}</b>?<br><br><i>This cannot be undone.</i>`;
+    this.showConfirm = true;
+  }
+
   // --- Delete with confirmation ------------------------------------------
 
   confirmDelete(project: Project): void {
@@ -450,8 +495,10 @@ export class AppComponent implements OnInit {
         await this.projects.deleteProject(this.pendingDeleteId);
       } else if (this.pendingDeleteType === 'inspiration') {
         await this.projects.deleteInspiration(this.pendingDeleteId);
-      } else {
+      } else if (this.pendingDeleteType === 'sponsor') {
         await this.projects.deleteSponsor(this.pendingDeleteId);
+      } else {
+        await this.projects.deleteConfiguration(this.pendingDeleteId);
       }
     }
     this.cancelDelete();

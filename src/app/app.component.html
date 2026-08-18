@@ -14,8 +14,9 @@
   (mainTabSelected)="selectMainTab($event)"
   (subTabSelected)="selectSubTab($event)"
   (sponsorsClick)="openSponsors()"
-  (trashClick)="openTrash()"
-></app-header>
+   (trashClick)="openTrash()"
+   (configurationClick)="openConfiguration()">
+ ></app-header>
 
 <main class="page" tabindex="-1">
   <section class="dashboard">
@@ -138,6 +139,15 @@
   (cancel)="closeSponsorForm()"
   (delete)="onDeleteSponsor($event)">
 </app-sponsor-form>
+
+<app-configuration-form
+  [visible]="showConfigurationForm"
+  [configurations]="projects.configurations()"
+  [model]="editingConfiguration"
+  (save)="onSaveConfiguration($event)"
+  (cancel)="closeConfigurationForm()"
+  (delete)="onDeleteConfiguration($event)">
+</app-configuration-form>
 
 <app-confirmation-toast
   [visible]="showConfirm"

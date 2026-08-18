@@ -39,6 +39,7 @@
       <div class="settings-container" (click)="$event.stopPropagation()">
         <button class="btn btn-icon settings-btn" type="button" (click)="toggleSettings()" title="Settings" aria-label="Settings">⚙</button>
         <div class="settings-dropdown" *ngIf="settingsOpen" (click)="$event.stopPropagation()">
+          <button class="dropdown-item" type="button" (click)="onConfiguration()">Configuration</button>
           <button class="dropdown-item" type="button" (click)="onTrash()">Trash</button>
           <button class="dropdown-item" type="button" (click)="onLogout()">Sign out</button>
           <div class="dropdown-version">v{{ version }}</div>

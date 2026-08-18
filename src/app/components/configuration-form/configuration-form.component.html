@@ -1,0 +1,79 @@
+<div class="modal-backdrop" *ngIf="visible" (click)="onCancel()">
+  <div class="modal configuration-form" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Edit configuration -- ' + draft.configuration_name : 'Configuration' }}</h3>
+      <button class="close-x-btn" type="button" (click)="onCancel()" aria-label="Close">×</button>
+    </div>
+
+    <form #configurationForm="ngForm" (ngSubmit)="onSubmit(configurationForm)" class="modal-body">
+      <div class="grid">
+        <label class="field full">
+          <span>Configuration Name</span>
+          <select
+            name="selectedName"
+            [(ngModel)]="selectedName"
+            (ngModelChange)="onNameChange($event)"
+            required>
+            <option value="__new__">New Configuration</option>
+            <option *ngFor="let name of configurationNames" [value]="name">{{ name }}</option>
+          </select>
+        </label>
+
+        <label class="field full" *ngIf="showNewNameInput">
+          <span>New Configuration Name</span>
+          <input
+            #nameInput
+            type="text"
+            name="configuration_name"
+            [(ngModel)]="draft.configuration_name"
+            required
+            maxlength="200"
+            placeholder="e.g. Email Settings" />
+        </label>
+
+        <label class="field full">
+          <span>Configuration Fieldname</span>
+          <input
+            #fieldnameInput
+            type="text"
+            name="configuration_fieldname"
+            [(ngModel)]="draft.configuration_fieldname"
+            required
+            maxlength="200"
+            placeholder="e.g. smtp_host" />
+        </label>
+
+        <label class="field full">
+          <span>
+            Configuration Values
+            <button
+              class="sort-btn"
+              type="button"
+              (click)="onSortValues()"
+              title="Sort values alphabetically (case-insensitive)"
+              aria-label="Sort values">
+              Sort
+            </button>
+          </span>
+          <textarea
+            name="configuration_values"
+            [(ngModel)]="draft.configuration_values"
+            rows="20"
+            placeholder="Enter configuration values..."></textarea>
+        </label>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" (click)="onCancel()">Cancel</button>
+        <button class="btn btn-primary" type="submit">
+          {{ isEditing ? 'Save changes' : 'Create configuration' }}
+        </button>
+        <button
+          *ngIf="isEditing"
+          class="btn btn-danger"
+          type="button"
+          (click)="onDelete()">Delete</button>
+      </div>
+    </form>
+  </div>
+</div>
