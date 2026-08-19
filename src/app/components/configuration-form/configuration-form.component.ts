@@ -70,12 +70,24 @@ export class ConfigurationFormComponent implements OnChanges {
 
   /** Sort the configuration values alphabetically (case-insensitive). */
   onSortValues(): void {
-    const values = (this.draft.configuration_values ?? '')
+    const values = [...(this.draft.configuration_values ?? [])];
+    values.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    this.draft.configuration_values = values;
+  }
+
+  /**
+   * Two-way binding bridge: `configuration_values` is a `string[]`, but the
+   * textarea treats it as newline-separated text. Convert in both directions
+   * so users still edit one entry per line.
+   */
+  get valuesText(): string {
+    return (this.draft.configuration_values ?? []).join('\n');
+  }
+  set valuesText(text: string) {
+    this.draft.configuration_values = (text ?? '')
       .split('\n')
       .map((v) => v.trim())
       .filter((v) => v.length > 0);
-    values.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-    this.draft.configuration_values = values.join('\n');
   }
 
   onSubmit(form: NgForm): void {
@@ -87,7 +99,7 @@ export class ConfigurationFormComponent implements OnChanges {
       ...this.draft,
       configuration_name: (this.draft.configuration_name ?? '').trim(),
       configuration_fieldname: (this.draft.configuration_fieldname ?? '').trim(),
-      configuration_values: (this.draft.configuration_values ?? '').trim(),
+      configuration_values: (this.draft.configuration_values ?? []).map((v) => v.trim()).filter((v) => v.length > 0),
     };
     this.save.emit(cleaned);
   }
@@ -107,7 +119,7 @@ export class ConfigurationFormComponent implements OnChanges {
       configuration_id: '',
       configuration_name: '',
       configuration_fieldname: '',
-      configuration_values: '',
+      configuration_values: [],
       updated_at: new Date().toISOString(),
     };
   }

@@ -1,6 +1,6 @@
 {
   "name": "salt-sister-moms",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "Salty Ideas — private project tracker for Salt Sister Moms.",
   "scripts": {
     "ng": "ng",

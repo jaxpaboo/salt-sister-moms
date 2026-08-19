@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 
 import {
+  ChecklistItem,
   DIFFICULTY_OPTIONS,
   INTEREST_LEVELS,
   Project,
@@ -13,6 +14,7 @@ import {
 } from '../../models/project';
 import { Sponsor } from '../../models/sponsor';
 import { Inspiration } from '../../models/inspiration';
+import { Configuration } from '../../models/configuration';
 import { ChecklistEditorComponent } from '../checklist-editor/checklist-editor.component';
 
 @Component({
@@ -28,6 +30,7 @@ export class ProjectFormComponent implements OnChanges {
   @Input() model: Project | null = null;
   @Input() sponsors: Sponsor[] = [];
   @Input() inspirations: Inspiration[] = [];
+  @Input() configurations: Configuration[] = [];
   @Input() isEditing = false;
 
   @Output() save = new EventEmitter<Project>();
@@ -47,6 +50,12 @@ export class ProjectFormComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model'] || changes['visible'] || changes['isEditing']) {
       this.draft = this.clone(this.model) ?? this.blank();
+      // On a brand-new idea, seed the checklist from the 'checklist'
+      // configuration document so the user starts with the admin-defined
+      // default rows instead of an empty list.
+      if (this.visible && !this.isEditing && this.draft.checklist.length === 0) {
+        this.draft.checklist = this.defaultChecklistFromConfigs();
+      }
       if (this.visible && !this.isEditing) {
         window.setTimeout(() => this.titleInput?.nativeElement.focus(), 0);
       }
@@ -121,5 +130,20 @@ export class ProjectFormComponent implements OnChanges {
       materials: (model.materials ?? []).map((m) => ({ ...m })),
       checklist: (model.checklist ?? []).map((c) => ({ ...c })),
     };
+  }
+
+  /**
+   * Build the default checklist rows from the first configuration document
+   * whose `configuration_name` is 'checklist'. Empty/whitespace entries are
+   * dropped so the editor never opens with blank rows. Returns `[]` when no
+   * matching configuration exists.
+   */
+  private defaultChecklistFromConfigs(): ChecklistItem[] {
+    const config = this.configurations.find((c) => c.configuration_name === 'checklist');
+    if (!config) return [];
+    return (config.configuration_values ?? [])
+      .map((v) => (v ?? '').trim())
+      .filter((v) => v.length > 0)
+      .map((text) => ({ text, done: false }));
   }
 }

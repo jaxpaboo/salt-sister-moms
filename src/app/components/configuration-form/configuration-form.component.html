@@ -57,9 +57,10 @@
           </span>
           <textarea
             name="configuration_values"
-            [(ngModel)]="draft.configuration_values"
+            [ngModel]="valuesText"
+            (ngModelChange)="valuesText = $event"
             rows="20"
-            placeholder="Enter configuration values..."></textarea>
+            placeholder="Enter configuration values (one per line)..."></textarea>
         </label>
       </div>
 

@@ -14,8 +14,9 @@ export interface Configuration {
   configuration_name: string;
   // The field key within that group — e.g. "smtp_host", "facebook_url".
   configuration_fieldname: string;
-  // The field value, stored as a string (can be multi-line).
-  configuration_values: string;
+  // The field values — one entry per item. Treated as a list everywhere it's
+  // rendered, edited, sorted, or persisted.
+  configuration_values: string[];
   // ISO timestamp of last edit.
   updated_at: string;
 }

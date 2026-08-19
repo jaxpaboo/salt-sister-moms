@@ -111,7 +111,7 @@ export class ProjectsService {
       ...c,
       configuration_name: c.configuration_name ?? '',
       configuration_fieldname: c.configuration_fieldname ?? '',
-      configuration_values: c.configuration_values ?? '',
+      configuration_values: c.configuration_values ?? [],
     }));
   }
 
