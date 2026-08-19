@@ -1,5 +1,5 @@
-<div class="modal-backdrop" *ngIf="visible" (click)="onCancel()">
-  <div class="modal sponsor-form" (click)="$event.stopPropagation()">
+<div class="modal-backdrop" *ngIf="visible">
+  <div class="modal sponsor-form">
     <div class="modal-header">
       <h3>{{ isEditing ? 'Edit sponsor -- ' + model?.name + ' (' + model?.sponsor_id + ')' : 'New Sponsor' }}</h3>
       <button class="close-x-btn" type="button" (click)="onCancel()" aria-label="Close">×</button>

@@ -1,5 +1,5 @@
-<div class="modal-backdrop" *ngIf="visible" (click)="close.emit()">
-  <div class="modal login-modal" (click)="$event.stopPropagation()">
+<div class="modal-backdrop" *ngIf="visible">
+  <div class="modal login-modal">
     <div class="modal-header">
       <h3>Sign in</h3>
       <button class="close-x-btn" type="button" aria-label="Close" (click)="close.emit()">×</button>

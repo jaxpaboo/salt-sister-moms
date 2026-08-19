@@ -1,5 +1,5 @@
-<div class="modal-backdrop" *ngIf="visible" (click)="onCancel()">
-  <div class="modal project-form" (click)="$event.stopPropagation()">
+<div class="modal-backdrop" *ngIf="visible">
+  <div class="modal project-form">
     <div class="modal-header">
       <h3>{{ isEditing ? 'Edit idea -- ' + model?.idea_title + ' (' + model?.project_id + ')' : 'New Salty Idea' }}</h3>
       <button class="close-x-btn" type="button" (click)="onCancel()" aria-label="Close">×</button>
