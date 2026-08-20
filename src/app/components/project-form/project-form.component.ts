@@ -37,12 +37,24 @@ export class ProjectFormComponent implements OnChanges {
   @Output() cancel = new EventEmitter<void>();
   @Output() delete = new EventEmitter<Project>();
 
-  readonly seasonOptions = SEASON_OPTIONS;
-  readonly statusOptions = STATUS_OPTIONS;
   readonly difficultyOptions = DIFFICULTY_OPTIONS;
   readonly repostableOptions = REPOSTABLE_OPTIONS;
   readonly interestLevels = INTEREST_LEVELS;
-  
+
+  /**
+   * Seasons + statuses come from configuration documents so admins can edit
+   * the lists without a code change. If no matching configuration document
+   * exists (e.g. on a fresh install before the admin has saved one), the
+   * hardcoded defaults from the model are used as a safety net.
+   */
+  get seasonOptions(): string[] {
+    return this.optionsFromConfig('seasons', SEASON_OPTIONS);
+  }
+
+  get statusOptions(): string[] {
+    return this.optionsFromConfig('status', STATUS_OPTIONS);
+  }
+
   // Local form state — keeps the form decoupled from the input model so we
   // don't mutate the parent's object until Save fires.
   draft: Project = this.blank();
@@ -62,11 +74,11 @@ export class ProjectFormComponent implements OnChanges {
     }
   }
 
-  toggleSeason(season: SeasonOccasion): void {
-    const has = this.draft.seasons.includes(season);
+  toggleSeason(season: string): void {
+    const has = this.draft.seasons.includes(season as SeasonOccasion);
     this.draft.seasons = has
       ? this.draft.seasons.filter((s) => s !== season)
-      : [...this.draft.seasons, season];
+      : [...this.draft.seasons, season as SeasonOccasion];
   }
 
   onSubmit(form: NgForm): void {
@@ -96,9 +108,9 @@ export class ProjectFormComponent implements OnChanges {
     }
   }
 
-  isSeasonSelected(season: SeasonOccasion): boolean {
-    return this.draft.seasons.includes(season);
-  } 
+  isSeasonSelected(season: string): boolean {
+    return this.draft.seasons.includes(season as SeasonOccasion);
+  }
 
   private blank(): Project {
     return {
@@ -145,5 +157,19 @@ export class ProjectFormComponent implements OnChanges {
       .map((v) => (v ?? '').trim())
       .filter((v) => v.length > 0)
       .map((text) => ({ text, done: false }));
+  }
+
+  /**
+   * Read a single configuration document by name and return its trimmed,
+   * non-empty values. Falls back to the supplied defaults if no document
+   * with that name exists, so the form still renders on first run.
+   */
+  private optionsFromConfig(name: string, fallback: readonly string[]): string[] {
+    const config = this.configurations.find((c) => c.configuration_name === name);
+    if (!config) return [...fallback];
+    const values = (config.configuration_values ?? [])
+      .map((v) => (v ?? '').trim())
+      .filter((v) => v.length > 0);
+    return values.length > 0 ? values : [...fallback];
   }
 }

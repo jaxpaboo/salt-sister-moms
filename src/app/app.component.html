@@ -2,7 +2,6 @@
   [isAuthenticated]="auth.isAuthenticated()"
   [email]="auth.email()"
   [mainTab]="mainTab"
-  [subTab]="subTab"
   [tabs]="tabs"
   [version]="appVersion"
   [showTrashTab]="showTrash"
@@ -12,7 +11,6 @@
   (newInspirationClick)="openNewInspiration()"
   (newSponsorClick)="openNewSponsor()"
   (mainTabSelected)="selectMainTab($event)"
-  (subTabSelected)="selectSubTab($event)"
   (sponsorsClick)="openSponsors()"
    (trashClick)="openTrash()"
    (configurationClick)="openConfiguration()">

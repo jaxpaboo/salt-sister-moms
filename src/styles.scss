@@ -18,6 +18,8 @@ body {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  // Prevent any descendant from forcing a horizontal page scrollbar.
+  overflow-x: hidden;
 }
 
 button {

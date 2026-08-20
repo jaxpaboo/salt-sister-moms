@@ -2,6 +2,8 @@ import { Component, OnInit, computed, effect, inject, signal } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, NgForm } from '@angular/forms';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 import packageJson from '../../package.json';
 
@@ -48,31 +50,18 @@ export class AppComponent implements OnInit {
 
   readonly auth = inject(AuthService);
   readonly projects = inject(ProjectsService);
+  private readonly router = inject(Router);
+
+  /** Tab inferred from the current URL. 'trash' is a sentinel so the
+   *  primary tabs (Projects / Inspirations / Sponsors) all render
+   *  unselected when the trash URL is active. */
+  mainTab: MainTab = 'projects';
 
   readonly tabs: TabConfig[] = [
-    {
-      label: 'Projects',
-      value: 'projects',
-      subTabs: [
-        { label: 'All', value: 'all' },
-        { label: 'Active', value: 'active' },
-        { label: 'Archive', value: 'archive' },
-      ],
-    },
-    {
-      label: 'Inspirations',
-      value: 'inspirations',
-      subTabs: [{ label: 'All', value: 'all' }],
-    },
-    {
-      label: 'Sponsors',
-      value: 'sponsors',
-      subTabs: [{ label: 'All', value: 'all' }],
-    },
+    { label: 'Projects', value: 'projects' },
+    { label: 'Inspirations', value: 'inspirations' },
+    { label: 'Sponsors', value: 'sponsors' },
   ];
-
-  mainTab: MainTab = 'projects';
-  subTab: string = 'all';
 
   showLogin = false;
   loginEmail = '';
@@ -118,12 +107,38 @@ export class AppComponent implements OnInit {
         this.projects.configurations.set([]);
       }
     });
+
+    // Keep mainTab in sync with the URL so deep links (and back/forward
+    // navigation) land on the right section.
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e) => this.syncTabFromUrl(e.urlAfterRedirects));
+    this.syncTabFromUrl(this.router.url);
   }
 
   ngOnInit(): void {
     // Kick off an initial fetch — this resolves whether or not a persisted
     // session was restored by AuthService during construction.
     void this.projects.refreshAll().catch(() => {});
+  }
+
+  /** Read the section from the URL path. Falls back to 'projects'. */
+  private syncTabFromUrl(url: string): void {
+    const path = (url.split('?')[0] ?? '/').toLowerCase();
+    if (path.startsWith('/trash')) {
+      this.mainTab = 'trash';
+      this.showTrash = true;
+      this.searchQuery.set('');
+    } else if (path.startsWith('/inspirations')) {
+      this.mainTab = 'inspirations';
+      this.showTrash = false;
+    } else if (path.startsWith('/sponsors')) {
+      this.mainTab = 'sponsors';
+      this.showTrash = false;
+    } else {
+      this.mainTab = 'projects';
+      this.showTrash = false;
+    }
   }
 
   onSearchInput(event: Event): void {
@@ -134,19 +149,8 @@ export class AppComponent implements OnInit {
   trackInspirationById = (_: number, inspiration: Inspiration): string => inspiration.inspiration_id;
   trackSponsorById = (_: number, sponsor: Sponsor): string => sponsor.sponsor_id;
 
-  // Derived: which projects show on the dashboard given the selected tab.
-  readonly displayedProjects = computed(() => {
-    const all = this.projects.activeProjects();
-    switch (this.subTab) {
-      case 'active':
-        return all.filter((p) => p.status !== 'Archive');
-      case 'archive':
-        return all.filter((p) => p.status === 'Archive');
-      case 'all':
-      default:
-        return all;
-    }
-  });
+  // Derived: which projects show on the dashboard.
+  readonly displayedProjects = computed(() => this.projects.activeProjects());
 
   // Further filter by search query (typeahead on title, description, id).
   readonly filteredProjects = computed(() => {
@@ -180,14 +184,7 @@ export class AppComponent implements OnInit {
     }
     switch (this.mainTab) {
       case 'projects':
-        switch (this.subTab) {
-          case 'active':
-            return 'Active ideas';
-          case 'archive':
-            return 'Archive';
-          default:
-            return 'All ideas';
-        }
+        return 'All ideas';
       case 'inspirations':
         return 'Inspirations';
       case 'sponsors':
@@ -228,9 +225,6 @@ export class AppComponent implements OnInit {
       return 'Sign in to load your ideas from Firebase.';
     }
     if (this.mainTab === 'projects') {
-      if (this.subTab === 'archive') {
-        return 'No archived ideas. Mark an idea as “Archive” to tuck it away.';
-      }
       return 'No ideas yet. Tap “+ New Idea” to capture one.';
     }
     if (this.mainTab === 'inspirations') {
@@ -246,11 +240,7 @@ export class AppComponent implements OnInit {
     this.mainTab = tab;
     this.showTrash = false;
     this.searchQuery.set('');
-  }
-
-  selectSubTab(sub: string): void {
-    this.subTab = sub;
-    this.searchQuery.set('');
+    void this.router.navigateByUrl(`/${tab}`);
   }
 
   // --- Trash view ---------------------------------------------------------
@@ -258,10 +248,12 @@ export class AppComponent implements OnInit {
   openTrash(): void {
     this.showTrash = true;
     this.searchQuery.set('');
+    void this.router.navigateByUrl('/trash');
   }
 
   closeTrash(): void {
     this.showTrash = false;
+    void this.router.navigateByUrl('/projects');
   }
 
   async restoreProject(project: Project): Promise<void> {

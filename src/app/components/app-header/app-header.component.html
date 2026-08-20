@@ -15,17 +15,6 @@
     </button>
   </nav>
 
-  <nav class="sub-nav" *ngIf="isAuthenticated && currentTabConfig()?.subTabs?.length">
-    <button
-      *ngFor="let sub of currentTabConfig()?.subTabs"
-      class="nav-sub-tab"
-      type="button"
-      [class.active]="subTab === sub.value"
-      (click)="subTabSelected.emit(sub.value)">
-      {{ sub.label }}
-    </button>
-  </nav>
-
   <div class="header-controls">
     <ng-container *ngIf="isAuthenticated; else loggedOut">
       <ng-container *ngIf="mainTab === 'projects'; else otherTab">

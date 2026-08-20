@@ -1,6 +1,14 @@
 import { Routes } from '@angular/router';
 
-// Single-page app for now — the dashboard is always rendered when the user is
-// logged in, and the login modal is opened over it. Add routes here when we
-// need dedicated screens (e.g. /sponsors, /inspirations).
-export const routes: Routes = [];
+// Each top-level section of the dashboard gets its own URL so a tab can be
+// shared (or bookmarked / opened after a redirect) and the app will land on
+// that section. The section is determined from the URL by AppComponent,
+// which switches its view based on the active route.
+export const routes: Routes = [
+  { path: '', pathMatch: 'full', redirectTo: 'projects' },
+  { path: 'projects', children: [] },
+  { path: 'inspirations', children: [] },
+  { path: 'sponsors', children: [] },
+  { path: 'trash', children: [] },
+  { path: '**', redirectTo: 'projects' },
+];

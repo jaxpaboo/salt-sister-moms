@@ -7,12 +7,20 @@
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 1rem;
+  overflow: hidden;
   padding: 1rem 1rem 1.25rem;
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  > * {
+    min-width: 0;
+    max-width: 100%;
+  }
 
   &:hover {
     transform: translateY(-2px);
@@ -29,6 +37,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .id-chip {
@@ -63,6 +72,8 @@
   font-size: 1.1rem;
   line-height: 1.25;
   color: #111827;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .description {
@@ -70,11 +81,14 @@
   font-size: 0.9rem;
   color: #4b5563;
   line-height: 1.45;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
+  // Clamp to 3 lines using max-height so the content can't grow a
+  // scrollbar that would sit on top of the card's rounded corners.
+  // (No display: -webkit-box / -webkit-line-clamp here — those don't
+  // clamp reliably in Firefox and can leave an inner scrollbar visible.)
+  max-height: calc(1.45em * 3);
   overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 
   &.muted {
     color: #9ca3af;
@@ -136,6 +150,8 @@
 .value {
   color: #111827;
   font-weight: 500;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .card-footer {
