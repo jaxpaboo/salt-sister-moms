@@ -1,4 +1,4 @@
-<fieldset>
+﻿<fieldset>
   <legend>{{ legend }}</legend>
   <ul class="checklist">
     <li *ngFor="let item of _items; let i = index">
@@ -10,7 +10,8 @@
         type="text"
         [(ngModel)]="item.text"
         [name]="legend + '_text_' + i"
-        [placeholder]="placeholder" />
+        [placeholder]="placeholder"
+        [title]="item.text || placeholder" />
       <button
         type="button"
         class="text-btn danger"
