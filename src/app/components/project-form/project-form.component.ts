@@ -15,7 +15,7 @@ import {
 import { Sponsor } from '../../models/sponsor';
 import { Inspiration } from '../../models/inspiration';
 import { Configuration } from '../../models/configuration';
-import { ChecklistEditorComponent } from '../checklist-editor/checklist-editor.component';
+import { ChecklistEditorComponent, ChecklistViewRequest } from '../checklist-editor/checklist-editor.component';
 
 @Component({
   selector: 'app-project-form',
@@ -58,6 +58,13 @@ export class ProjectFormComponent implements OnChanges {
   // Local form state — keeps the form decoupled from the input model so we
   // don't mutate the parent's object until Save fires.
   draft: Project = this.blank();
+
+  /**
+   * State for the read-only "view" modal that stacks on top of the
+   * project form. Populated by `onChecklistView` when the user
+   * double-clicks a filter button inside either `<app-checklist-editor>`.
+   */
+  checklistView: ChecklistViewRequest | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model'] || changes['visible'] || changes['isEditing']) {
@@ -106,6 +113,15 @@ export class ProjectFormComponent implements OnChanges {
     if (this.model) {
       this.delete.emit(this.model);
     }
+  }
+
+  /** Open the stacked read-only view modal. */
+  onChecklistView(req: ChecklistViewRequest): void {
+    this.checklistView = req;
+  }
+
+  closeChecklistView(): void {
+    this.checklistView = null;
   }
 
   isSeasonSelected(season: string): boolean {

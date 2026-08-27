@@ -15,6 +15,29 @@
     </button>
   </nav>
 
+  <div class="nav-mobile" *ngIf="isAuthenticated" (click)="$event.stopPropagation()">
+    <button
+      class="nav-mobile-trigger"
+      type="button"
+      (click)="toggleMenu()"
+      aria-haspopup="true"
+      [attr.aria-expanded]="menuOpen"
+      title="Switch section">
+      <span class="nav-mobile-label">{{ activeTabLabel() }}</span>
+      <span class="chevron" aria-hidden="true">▾</span>
+    </button>
+    <div class="nav-mobile-dropdown" *ngIf="menuOpen">
+      <button
+        *ngFor="let tab of tabs"
+        class="dropdown-item"
+        type="button"
+        [class.active]="mainTab === tab.value"
+        (click)="selectTab(tab.value)">
+        {{ tab.label }}
+      </button>
+    </div>
+  </div>
+
   <div class="header-controls">
     <ng-container *ngIf="isAuthenticated; else loggedOut">
       <ng-container *ngIf="mainTab === 'projects'; else otherTab">
@@ -43,3 +66,4 @@
 
 <!-- Backdrop to close settings when clicking outside -->
 <div class="settings-backdrop" *ngIf="settingsOpen" (click)="closeSettings()"></div>
+<div class="menu-backdrop" *ngIf="menuOpen" (click)="closeMenu()"></div>

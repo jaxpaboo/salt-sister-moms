@@ -242,3 +242,31 @@
     grid-template-columns: 1fr;
   }
 }
+
+// Stacked read-only view modal. Sits on top of the project form modal
+// (z-index higher than the form's backdrop) and uses the same .modal
+// chrome so the size matches exactly.
+.view-backdrop {
+  z-index: 110;
+}
+
+.view-modal {
+  width: min(720px, 100%);
+}
+
+.view-body {
+  padding: 0.75rem 1rem;
+}
+
+.view-textarea {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: #f9fafb;
+  color: #111827;
+  resize: vertical;
+}

@@ -94,7 +94,8 @@
           legend="Materials"
           placeholder="flour, salt, water, paint…"
           [items]="draft.materials"
-          (itemsChange)="draft.materials = $event">
+          (itemsChange)="draft.materials = $event"
+          (viewRequest)="onChecklistView($event)">
         </app-checklist-editor>
 
         <fieldset class="field full seasons">
@@ -133,7 +134,8 @@
           legend="Checklist"
           placeholder="Step or material…"
           [items]="draft.checklist"
-          (itemsChange)="draft.checklist = $event">
+          (itemsChange)="draft.checklist = $event"
+          (viewRequest)="onChecklistView($event)">
         </app-checklist-editor>
       </div>
 
@@ -149,5 +151,28 @@
           (click)="onDelete()">Delete</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Read-only "view" modal: stacked on top of the project form. Same
+     .modal chrome, same backdrop pattern. Opened by double-clicking
+     a filter button inside either <app-checklist-editor>. -->
+<div class="modal-backdrop view-backdrop" *ngIf="checklistView" (click)="closeChecklistView()">
+  <div class="modal view-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ checklistView.legend || 'Items' }} — {{ checklistView.filter }}</h3>
+      <button class="close-x-btn" type="button" aria-label="Close" (click)="closeChecklistView()">×</button>
+    </div>
+    <div class="modal-body view-body">
+      <textarea
+        class="view-textarea"
+        readonly
+        [value]="checklistView.lines.join('\n')"
+        rows="14"
+        spellcheck="false"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" type="button" (click)="closeChecklistView()">OK</button>
+    </div>
   </div>
 </div>

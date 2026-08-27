@@ -1,14 +1,39 @@
 ﻿<fieldset>
   <legend>{{ legend }}</legend>
+  <div class="filter-row" role="group" aria-label="Filter rows">
+    <button
+      type="button"
+      class="filter-btn"
+      [class.active]="filter === 'all'"
+      (click)="setFilter('all')"
+      (dblclick)="openViewModal()"
+      title="Double click for popup list">all</button>
+    <button
+      type="button"
+      class="filter-btn"
+      [class.active]="filter === 'done'"
+      (click)="setFilter('done')"
+      (dblclick)="openViewModal()"
+      title="Double click for popup list">done</button>
+    <button
+      type="button"
+      class="filter-btn"
+      [class.active]="filter === 'pending'"
+      (click)="setFilter('pending')"
+      (dblclick)="openViewModal()"
+      title="Double click for popup list">pending</button>
+  </div>
   <ul class="checklist">
-    <li *ngFor="let item of _items; let i = index">
+    <li *ngFor="let item of visibleItems(); let i = index">
       <input
         type="checkbox"
         [(ngModel)]="item.done"
+        (ngModelChange)="onRowEdited(i)"
         [name]="legend + '_done_' + i" />
       <input
         type="text"
         [(ngModel)]="item.text"
+        (ngModelChange)="onRowEdited(i)"
         [name]="legend + '_text_' + i"
         [placeholder]="placeholder"
         [title]="item.text || placeholder" />
@@ -19,5 +44,9 @@
         aria-label="Remove row">×</button>
     </li>
   </ul>
-  <button type="button" class="btn btn-secondary" (click)="addItem()">+ Add row</button>
+  <button
+    *ngIf="filter === 'all'"
+    type="button"
+    class="btn btn-secondary"
+    (click)="addItem()">+ Add row</button>
 </fieldset>

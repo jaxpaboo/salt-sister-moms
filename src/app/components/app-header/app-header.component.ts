@@ -34,6 +34,7 @@ export class AppHeaderComponent {
   @Output() configurationClick = new EventEmitter<void>();
 
   settingsOpen = false;
+  menuOpen = false;
 
   toggleSettings(): void {
     this.settingsOpen = !this.settingsOpen;
@@ -41,6 +42,23 @@ export class AppHeaderComponent {
 
   closeSettings(): void {
     this.settingsOpen = false;
+  }
+
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  closeMenu(): void {
+    this.menuOpen = false;
+  }
+
+  selectTab(tab: MainTab): void {
+    this.menuOpen = false;
+    this.mainTabSelected.emit(tab);
+  }
+
+  activeTabLabel(): string {
+    return this.tabs.find((t) => t.value === this.mainTab)?.label ?? '';
   }
 
   onLogout(): void {

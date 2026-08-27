@@ -175,21 +175,75 @@
   z-index: 49;
 }
 
+/* Mobile section switcher — hidden on desktop, shown on phones. */
+.nav-mobile {
+  display: none;
+}
+
+.menu-backdrop {
+  display: none;
+}
+
+.nav-mobile-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #0f766e;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.nav-mobile-trigger .chevron {
+  font-size: 0.75rem;
+}
+
+.nav-mobile-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0.4rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.6rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.nav-mobile-dropdown .dropdown-item.active {
+  background: #f0fdfa;
+  color: #0f766e;
+  font-weight: 600;
+}
+
 @media (max-width: 720px) {
   .topbar {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     padding: 0.6rem 0.75rem;
   }
 
   .primary-nav {
-    order: 3;
-    width: 100%;
-    justify-content: flex-start;
-    overflow-x: auto;
+    display: none;
   }
 
-  .nav-tab {
-    flex-shrink: 0;
+  .nav-mobile {
+    display: flex;
+    position: relative;
+    flex: 1;
+    justify-content: flex-start;
+  }
+
+  .menu-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 49;
   }
 
   .header-controls .who {

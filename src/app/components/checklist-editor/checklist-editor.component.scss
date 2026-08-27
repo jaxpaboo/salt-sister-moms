@@ -54,3 +54,32 @@ fieldset {
     min-width: 0;
   }
 }
+
+.filter-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.filter-btn {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #374151;
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+
+  &:hover {
+    background: #f9fafb;
+  }
+
+  &.active {
+    background: #0f766e;
+    border-color: #0f766e;
+    color: #ffffff;
+  }
+}
