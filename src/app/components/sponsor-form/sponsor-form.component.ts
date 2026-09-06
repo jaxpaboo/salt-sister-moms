@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 
 import { Sponsor } from '../../models/sponsor';
+import { preventEnterSubmit } from '../../utils/forms';
 
 @Component({
   selector: 'app-sponsor-form',
@@ -13,6 +14,8 @@ import { Sponsor } from '../../models/sponsor';
 export class SponsorFormComponent implements OnChanges {
   @ViewChild('nameInput') private nameInput?: ElementRef<HTMLInputElement>;
 
+  readonly preventEnterSubmit = preventEnterSubmit;
+
   @Input() visible = false;
   @Input() model: Sponsor | null = null;
   @Input() isEditing = false;
@@ -20,8 +23,15 @@ export class SponsorFormComponent implements OnChanges {
   @Output() save = new EventEmitter<Sponsor>();
   @Output() cancel = new EventEmitter<void>();
   @Output() delete = new EventEmitter<Sponsor>();
+  /** Emitted instead of `cancel` when the user tries to close a dirty form —
+   *  the parent is expected to confirm before actually closing. */
+  @Output() unsavedClose = new EventEmitter<void>();
 
   draft: Sponsor = this.blank();
+
+  // Snapshot of `draft` as of the last time the form was (re)opened, used to
+  // detect unsaved edits when the user tries to close it.
+  private originalSnapshot = '';
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model'] || changes['visible'] || changes['isEditing']) {
@@ -29,7 +39,13 @@ export class SponsorFormComponent implements OnChanges {
       if (this.visible && !this.isEditing) {
         window.setTimeout(() => this.nameInput?.nativeElement.focus(), 0);
       }
+      this.originalSnapshot = JSON.stringify(this.draft);
     }
+  }
+
+  /** True when the draft has changed since the form was opened. */
+  private isDirty(): boolean {
+    return JSON.stringify(this.draft) !== this.originalSnapshot;
   }
 
   onSubmit(form: NgForm): void {
@@ -50,6 +66,10 @@ export class SponsorFormComponent implements OnChanges {
   }
 
   onCancel(): void {
+    if (this.isDirty()) {
+      this.unsavedClose.emit();
+      return;
+    }
     this.cancel.emit();
   }
 

@@ -16,6 +16,7 @@ import { Sponsor } from '../../models/sponsor';
 import { Inspiration } from '../../models/inspiration';
 import { Configuration } from '../../models/configuration';
 import { ChecklistEditorComponent, ChecklistViewRequest } from '../checklist-editor/checklist-editor.component';
+import { preventEnterSubmit } from '../../utils/forms';
 
 @Component({
   selector: 'app-project-form',
@@ -25,6 +26,8 @@ import { ChecklistEditorComponent, ChecklistViewRequest } from '../checklist-edi
 })
 export class ProjectFormComponent implements OnChanges {
   @ViewChild('titleInput') private titleInput?: ElementRef<HTMLInputElement>;
+
+  readonly preventEnterSubmit = preventEnterSubmit;
 
   @Input() visible = false;
   @Input() model: Project | null = null;
@@ -36,6 +39,9 @@ export class ProjectFormComponent implements OnChanges {
   @Output() save = new EventEmitter<Project>();
   @Output() cancel = new EventEmitter<void>();
   @Output() delete = new EventEmitter<Project>();
+  /** Emitted instead of `cancel` when the user tries to close a dirty form —
+   *  the parent is expected to confirm before actually closing. */
+  @Output() unsavedClose = new EventEmitter<void>();
 
   readonly difficultyOptions = DIFFICULTY_OPTIONS;
   readonly repostableOptions = REPOSTABLE_OPTIONS;
@@ -66,6 +72,10 @@ export class ProjectFormComponent implements OnChanges {
    */
   checklistView: ChecklistViewRequest | null = null;
 
+  // Snapshot of `draft` as of the last time the form was (re)opened, used to
+  // detect unsaved edits when the user tries to close it.
+  private originalSnapshot = '';
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model'] || changes['visible'] || changes['isEditing']) {
       this.draft = this.clone(this.model) ?? this.blank();
@@ -78,7 +88,13 @@ export class ProjectFormComponent implements OnChanges {
       if (this.visible && !this.isEditing) {
         window.setTimeout(() => this.titleInput?.nativeElement.focus(), 0);
       }
+      this.originalSnapshot = JSON.stringify(this.draft);
     }
+  }
+
+  /** True when the draft has changed since the form was opened. */
+  private isDirty(): boolean {
+    return JSON.stringify(this.draft) !== this.originalSnapshot;
   }
 
   toggleSeason(season: string): void {
@@ -106,6 +122,10 @@ export class ProjectFormComponent implements OnChanges {
   }
 
   onCancel(): void {
+    if (this.isDirty()) {
+      this.unsavedClose.emit();
+      return;
+    }
     this.cancel.emit();
   }
 

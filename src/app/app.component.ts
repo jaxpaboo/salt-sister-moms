@@ -82,10 +82,12 @@ export class AppComponent implements OnInit {
   showConfigurationForm = false;
   editingConfiguration: Configuration | null = null;
 
+  // Backs both destructive-delete confirmations and "discard unsaved
+  // changes?" prompts raised when a form is closed while dirty — whichever
+  // asked last owns `confirmAction`, run when the user hits Confirm.
   showConfirm = false;
   confirmMessage = '';
-  private pendingDeleteId: string | null = null;
-  private pendingDeleteType: 'project' | 'inspiration' | 'sponsor' | 'configuration' = 'project';
+  private confirmAction: (() => void | Promise<void>) | null = null;
 
   // Trash view state
   showTrash = false;
@@ -319,6 +321,11 @@ export class AppComponent implements OnInit {
     this.editingProject = null;
   }
 
+  /** Raised when the project form's Cancel/× is clicked with unsaved edits. */
+  confirmDiscardProject(): void {
+    this.askConfirm('Discard unsaved changes to this idea?', () => this.closeForm());
+  }
+
   async onSave(project: Project): Promise<void> {
     if (this.editingProject && this.editingProject.project_id) {
       // Existing project — update in place.
@@ -360,6 +367,11 @@ export class AppComponent implements OnInit {
     this.isEditingInspiration = false;
   }
 
+  /** Raised when the inspiration form's Cancel/× is clicked with unsaved edits. */
+  confirmDiscardInspiration(): void {
+    this.askConfirm('Discard unsaved changes to this inspiration?', () => this.closeInspirationForm());
+  }
+
   async onSaveInspiration(inspiration: Inspiration): Promise<void> {
     if (inspiration.inspiration_id) {
       // Existing inspiration — update in place.
@@ -374,13 +386,13 @@ export class AppComponent implements OnInit {
     this.isEditingInspiration = false;
   }
 
-  async onDeleteInspiration(inspiration: Inspiration): Promise<void> {
+  onDeleteInspiration(inspiration: Inspiration): void {
     this.showInspirationForm = false;
     this.editingInspiration = null;
-    this.pendingDeleteId = inspiration.inspiration_id;
-    this.pendingDeleteType = 'inspiration';
-    this.confirmMessage = `Delete inspiration <b>${inspiration.name}</b>?<br><br><i>This cannot be undone.</i>`;
-    this.showConfirm = true;
+    this.askConfirm(
+      `Delete inspiration <b>${inspiration.name}</b>?<br><br><i>This cannot be undone.</i>`,
+      () => this.projects.deleteInspiration(inspiration.inspiration_id),
+    );
   }
 
   // --- New / edit / save flow (Sponsors) ---------------------------------
@@ -411,6 +423,11 @@ export class AppComponent implements OnInit {
     this.isEditingSponsor = false;
   }
 
+  /** Raised when the sponsor form's Cancel/× is clicked with unsaved edits. */
+  confirmDiscardSponsor(): void {
+    this.askConfirm('Discard unsaved changes to this sponsor?', () => this.closeSponsorForm());
+  }
+
   async onSaveSponsor(sponsor: Sponsor): Promise<void> {
     if (sponsor.sponsor_id) {
       // Existing sponsor — update in place.
@@ -425,13 +442,13 @@ export class AppComponent implements OnInit {
     this.isEditingSponsor = false;
   }
 
-  async onDeleteSponsor(sponsor: Sponsor): Promise<void> {
+  onDeleteSponsor(sponsor: Sponsor): void {
     this.showSponsorForm = false;
     this.editingSponsor = null;
-    this.pendingDeleteId = sponsor.sponsor_id;
-    this.pendingDeleteType = 'sponsor';
-    this.confirmMessage = `Delete sponsor <b>${sponsor.name}</b>?<br><br><i>This cannot be undone.</i>`;
-    this.showConfirm = true;
+    this.askConfirm(
+      `Delete sponsor <b>${sponsor.name}</b>?<br><br><i>This cannot be undone.</i>`,
+      () => this.projects.deleteSponsor(sponsor.sponsor_id),
+    );
   }
 
   // --- Configuration flow ------------------------------------------------
@@ -450,6 +467,11 @@ export class AppComponent implements OnInit {
     this.editingConfiguration = null;
   }
 
+  /** Raised when the configuration form's Cancel/× is clicked with unsaved edits. */
+  confirmDiscardConfiguration(): void {
+    this.askConfirm('Discard unsaved changes to this configuration?', () => this.closeConfigurationForm());
+  }
+
   async onSaveConfiguration(config: Configuration): Promise<void> {
     if (config.configuration_id) {
       // Existing configuration — update in place.
@@ -463,42 +485,41 @@ export class AppComponent implements OnInit {
     this.editingConfiguration = null;
   }
 
-  async onDeleteConfiguration(config: Configuration): Promise<void> {
+  onDeleteConfiguration(config: Configuration): void {
     this.showConfigurationForm = false;
     this.editingConfiguration = null;
-    this.pendingDeleteId = config.configuration_id;
-    this.pendingDeleteType = 'configuration';
-    this.confirmMessage = `Delete configuration <b>${config.configuration_name}</b>?<br><br><i>This cannot be undone.</i>`;
-    this.showConfirm = true;
+    this.askConfirm(
+      `Delete configuration <b>${config.configuration_name}</b>?<br><br><i>This cannot be undone.</i>`,
+      () => this.projects.deleteConfiguration(config.configuration_id),
+    );
   }
 
-  // --- Delete with confirmation ------------------------------------------
+  // --- Confirmation toast (deletes + discard-unsaved-changes prompts) ----
 
   confirmDelete(project: Project): void {
-    this.pendingDeleteId = project.project_id;
-    this.pendingDeleteType = 'project';
-    this.confirmMessage = `Move idea <b>${project.idea_title}</b> to trash?<br><br><i>You can restore it later from the Trash view.</i>`;
+    this.askConfirm(
+      `Move idea <b>${project.idea_title}</b> to trash?<br><br><i>You can restore it later from the Trash view.</i>`,
+      () => this.projects.deleteProject(project.project_id),
+    );
+  }
+
+  /** Arm the shared confirmation toast with a message and the action to run on Confirm. */
+  private askConfirm(message: string, action: () => void | Promise<void>): void {
+    this.confirmMessage = message;
+    this.confirmAction = action;
     this.showConfirm = true;
   }
 
-  async doDelete(): Promise<void> {
-    if (this.pendingDeleteId) {
-      if (this.pendingDeleteType === 'project') {
-        await this.projects.deleteProject(this.pendingDeleteId);
-      } else if (this.pendingDeleteType === 'inspiration') {
-        await this.projects.deleteInspiration(this.pendingDeleteId);
-      } else if (this.pendingDeleteType === 'sponsor') {
-        await this.projects.deleteSponsor(this.pendingDeleteId);
-      } else {
-        await this.projects.deleteConfiguration(this.pendingDeleteId);
-      }
+  async onConfirmAction(): Promise<void> {
+    const action = this.confirmAction;
+    this.cancelConfirm();
+    if (action) {
+      await action();
     }
-    this.cancelDelete();
   }
 
-  cancelDelete(): void {
-    this.pendingDeleteId = null;
-    this.pendingDeleteType = 'project';
+  cancelConfirm(): void {
+    this.confirmAction = null;
     this.showConfirm = false;
     this.confirmMessage = '';
   }

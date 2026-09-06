@@ -118,6 +118,7 @@
   [isEditing]="isEditing"
   (save)="onSave($event)"
   (cancel)="closeForm()"
+  (unsavedClose)="confirmDiscardProject()"
   (delete)="onDelete($event)">
 </app-project-form>
 
@@ -127,6 +128,7 @@
   [isEditing]="isEditingInspiration"
   (save)="onSaveInspiration($event)"
   (cancel)="closeInspirationForm()"
+  (unsavedClose)="confirmDiscardInspiration()"
   (delete)="onDeleteInspiration($event)">
 </app-inspiration-form>
 
@@ -136,6 +138,7 @@
   [isEditing]="isEditingSponsor"
   (save)="onSaveSponsor($event)"
   (cancel)="closeSponsorForm()"
+  (unsavedClose)="confirmDiscardSponsor()"
   (delete)="onDeleteSponsor($event)">
 </app-sponsor-form>
 
@@ -145,12 +148,13 @@
   [model]="editingConfiguration"
   (save)="onSaveConfiguration($event)"
   (cancel)="closeConfigurationForm()"
+  (unsavedClose)="confirmDiscardConfiguration()"
   (delete)="onDeleteConfiguration($event)">
 </app-configuration-form>
 
 <app-confirmation-toast
   [visible]="showConfirm"
   [message]="confirmMessage"
-  (confirm)="doDelete()"
-  (cancel)="cancelDelete()">
+  (confirm)="onConfirmAction()"
+  (cancel)="cancelConfirm()">
 </app-confirmation-toast>

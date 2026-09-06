@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 
 import { Configuration } from '../../models/configuration';
+import { preventEnterSubmit } from '../../utils/forms';
 
 @Component({
   selector: 'app-configuration-form',
@@ -14,6 +15,8 @@ export class ConfigurationFormComponent implements OnChanges {
   @ViewChild('nameInput') private nameInput?: ElementRef<HTMLInputElement>;
   @ViewChild('fieldnameInput') private fieldnameInput?: ElementRef<HTMLInputElement>;
 
+  readonly preventEnterSubmit = preventEnterSubmit;
+
   @Input() visible = false;
   @Input() configurations: Configuration[] = [];
   @Input() model: Configuration | null = null;
@@ -21,6 +24,9 @@ export class ConfigurationFormComponent implements OnChanges {
   @Output() save = new EventEmitter<Configuration>();
   @Output() cancel = new EventEmitter<void>();
   @Output() delete = new EventEmitter<Configuration>();
+  /** Emitted instead of `cancel` when the user tries to close a dirty form —
+   *  the parent is expected to confirm before actually closing. */
+  @Output() unsavedClose = new EventEmitter<void>();
 
   // Local form state — keeps the form decoupled from the input model so we
   // don't mutate the parent's object until Save fires.
@@ -28,6 +34,11 @@ export class ConfigurationFormComponent implements OnChanges {
   isEditing = false;
   showNewNameInput = false;
   selectedName = '__new__';
+
+  // Snapshot of `draft` as of the last time it was reset to a clean baseline
+  // (form opened, or a different configuration picked from the dropdown),
+  // used to detect unsaved edits when the user tries to close the form.
+  private originalSnapshot = '';
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model'] || changes['visible']) {
@@ -43,7 +54,13 @@ export class ConfigurationFormComponent implements OnChanges {
       if (this.visible && !this.isEditing) {
         window.setTimeout(() => this.nameInput?.nativeElement.focus(), 0);
       }
+      this.originalSnapshot = JSON.stringify(this.draft);
     }
+  }
+
+  /** True when the draft has changed since it was last a clean baseline. */
+  private isDirty(): boolean {
+    return JSON.stringify(this.draft) !== this.originalSnapshot;
   }
 
   /** Distinct configuration names for the dropdown, sorted alphabetically. */
@@ -66,6 +83,7 @@ export class ConfigurationFormComponent implements OnChanges {
         this.isEditing = true;
       }
     }
+    this.originalSnapshot = JSON.stringify(this.draft);
   }
 
   /** Sort the configuration values alphabetically (case-insensitive). */
@@ -105,6 +123,10 @@ export class ConfigurationFormComponent implements OnChanges {
   }
 
   onCancel(): void {
+    if (this.isDirty()) {
+      this.unsavedClose.emit();
+      return;
+    }
     this.cancel.emit();
   }
 

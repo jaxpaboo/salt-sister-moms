@@ -4,6 +4,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 
 import { Inspiration } from '../../models/inspiration';
 import { buildYoutubeEmbedUrl } from '../../utils/youtube';
+import { preventEnterSubmit } from '../../utils/forms';
 
 @Component({
   selector: 'app-inspiration-form',
@@ -14,6 +15,8 @@ import { buildYoutubeEmbedUrl } from '../../utils/youtube';
 export class InspirationFormComponent implements OnChanges {
   @ViewChild('nameInput') private nameInput?: ElementRef<HTMLInputElement>;
 
+  readonly preventEnterSubmit = preventEnterSubmit;
+
   @Input() visible = false;
   @Input() model: Inspiration | null = null;
   @Input() isEditing = false;
@@ -21,8 +24,15 @@ export class InspirationFormComponent implements OnChanges {
   @Output() save = new EventEmitter<Inspiration>();
   @Output() cancel = new EventEmitter<void>();
   @Output() delete = new EventEmitter<Inspiration>();
+  /** Emitted instead of `cancel` when the user tries to close a dirty form —
+   *  the parent is expected to confirm before actually closing. */
+  @Output() unsavedClose = new EventEmitter<void>();
 
   draft: Inspiration = this.blank();
+
+  // Snapshot of `draft` as of the last time the form was (re)opened, used to
+  // detect unsaved edits when the user tries to close it.
+  private originalSnapshot = '';
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model'] || changes['visible'] || changes['isEditing']) {
@@ -30,7 +40,13 @@ export class InspirationFormComponent implements OnChanges {
       if (this.visible && !this.isEditing) {
         window.setTimeout(() => this.nameInput?.nativeElement.focus(), 0);
       }
+      this.originalSnapshot = JSON.stringify(this.draft);
     }
+  }
+
+  /** True when the draft has changed since the form was opened. */
+  private isDirty(): boolean {
+    return JSON.stringify(this.draft) !== this.originalSnapshot;
   }
 
   onSubmit(form: NgForm): void {
@@ -53,6 +69,10 @@ export class InspirationFormComponent implements OnChanges {
   }
 
   onCancel(): void {
+    if (this.isDirty()) {
+      this.unsavedClose.emit();
+      return;
+    }
     this.cancel.emit();
   }
 

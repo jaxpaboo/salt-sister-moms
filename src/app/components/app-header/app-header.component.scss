@@ -249,4 +249,54 @@
   .header-controls .who {
     display: none;
   }
+
+  /* Everything below prevents the settings gear from being pushed past the
+     viewport edge (and silently clipped by the page's overflow-x: hidden)
+     on narrow phones. The row itself keeps flex-shrink: 0 by default, so
+     without this the add-idea/inspiration/sponsor button and the nav
+     switcher were the only things absorbing the squeeze, and once they hit
+     their content minimums the excess just overflowed off-screen. */
+  .header-controls {
+    flex-shrink: 1;
+    min-width: 0;
+    gap: 0.35rem;
+  }
+
+  .add-btn {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .settings-container {
+    flex-shrink: 0;
+  }
+
+  .nav-mobile {
+    min-width: 0;
+  }
+
+  .nav-mobile-trigger {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .nav-mobile-label {
+    max-width: 6.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* On the narrowest phones, drop the wordmark and keep just the icon so
+   there's still room for the tab switcher, the add button, and settings. */
+@media (max-width: 400px) {
+  .brand {
+    display: none;
+  }
 }

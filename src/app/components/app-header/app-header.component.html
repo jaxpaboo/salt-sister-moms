@@ -41,11 +41,11 @@
   <div class="header-controls">
     <ng-container *ngIf="isAuthenticated; else loggedOut">
       <ng-container *ngIf="mainTab === 'projects'; else otherTab">
-        <button class="btn btn-success" type="button" (click)="newProjectClick.emit()">+ New Idea</button>
+        <button class="btn btn-success add-btn" type="button" (click)="newProjectClick.emit()">+ Idea</button>
       </ng-container>
       <ng-template #otherTab>
-        <button *ngIf="mainTab === 'inspirations'" class="btn btn-success" type="button" (click)="newInspirationClick.emit()">+ New Inspiration</button>
-        <button *ngIf="mainTab === 'sponsors'" class="btn btn-success" type="button" (click)="newSponsorClick.emit()">+ New Sponsor</button>
+        <button *ngIf="mainTab === 'inspirations'" class="btn btn-success add-btn" type="button" (click)="newInspirationClick.emit()">+ Inspiration</button>
+        <button *ngIf="mainTab === 'sponsors'" class="btn btn-success add-btn" type="button" (click)="newSponsorClick.emit()">+ Sponsor</button>
       </ng-template>
       <span class="who">{{ email }}</span>
       <div class="settings-container" (click)="$event.stopPropagation()">

@@ -5,7 +5,7 @@
       <button class="close-x-btn" type="button" (click)="onCancel()" aria-label="Close">×</button>
     </div>
 
-    <form #projectForm="ngForm" (ngSubmit)="onSubmit(projectForm)" class="modal-body">
+    <form #projectForm="ngForm" (ngSubmit)="onSubmit(projectForm)" (keydown.enter)="preventEnterSubmit($event)" class="modal-body">
       <div class="grid">
         <label class="field full">
           <span>Idea title</span>
