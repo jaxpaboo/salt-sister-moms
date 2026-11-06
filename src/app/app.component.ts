@@ -95,6 +95,10 @@ export class AppComponent implements OnInit {
   // Search
   searchQuery = signal('');
 
+  // Projects list: date sort + posted-status filter.
+  sortOrder = signal<'newest' | 'oldest'>('newest');
+  statusFilter = signal<'All' | 'Unposted' | 'Posted'>('Unposted');
+
   constructor() {
     // effect() must be called inside an injection context — the constructor
     // of an Angular-managed component is one. React to auth flips by loading
@@ -154,17 +158,34 @@ export class AppComponent implements OnInit {
   // Derived: which projects show on the dashboard.
   readonly displayedProjects = computed(() => this.projects.activeProjects());
 
-  // Further filter by search query (typeahead on title, description, id).
+  // Further filter by search query (typeahead on title, description, id),
+  // posted-status, then sort by created date (project_id sorts
+  // chronologically since it's a YYYYMMDDnnn string).
   readonly filteredProjects = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
-    if (!q) return this.displayedProjects();
-    return this.displayedProjects().filter((p) => {
-      return (
-        p.idea_title.toLowerCase().includes(q) ||
-        p.idea_description.toLowerCase().includes(q) ||
-        p.project_id.toLowerCase().includes(q)
-      );
+    let list = this.displayedProjects();
+    if (q) {
+      list = list.filter((p) => {
+        return (
+          p.idea_title.toLowerCase().includes(q) ||
+          p.idea_description.toLowerCase().includes(q) ||
+          p.project_id.toLowerCase().includes(q)
+        );
+      });
+    }
+
+    const status = this.statusFilter();
+    if (status !== 'All') {
+      list = list.filter((p) => (status === 'Posted' ? p.status === 'Posted' : p.status !== 'Posted'));
+    }
+
+    const order = this.sortOrder();
+    list = [...list].sort((a, b) => {
+      const cmp = a.project_id.localeCompare(b.project_id);
+      return order === 'newest' ? -cmp : cmp;
     });
+
+    return list;
   });
 
   // Derived: filtered inspirations for search.

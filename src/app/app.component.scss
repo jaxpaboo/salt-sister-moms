@@ -51,6 +51,35 @@
   }
 }
 
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.title-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-select {
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.8rem;
+  background: #ffffff;
+  color: #374151;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    border-color: #0f766e;
+    box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.15);
+  }
+}
+
 .dashboard-title {
   margin: 0;
   font-size: 1.5rem;

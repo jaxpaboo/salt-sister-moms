@@ -8,6 +8,20 @@
 
   <h2 class="title">{{ project.idea_title || 'Untitled idea' }}</h2>
 
+  <div class="created-row">
+    <p class="created-date" *ngIf="createdDate">{{ createdDate }}</p>
+    <div
+      class="checklist-meter"
+      *ngIf="checklistTotal"
+      [title]="checklistDone + ' of ' + checklistTotal + ' checklist items done (' + checklistPct + '%)'"
+      [attr.aria-label]="checklistDone + ' of ' + checklistTotal + ' checklist items done'">
+      <div class="checklist-meter__track">
+        <div class="checklist-meter__fill" [style.width.%]="checklistPct"></div>
+      </div>
+      <span class="checklist-meter__label">{{ checklistDone }}/{{ checklistTotal }}</span>
+    </div>
+  </div>
+
   <p class="description" *ngIf="project.idea_description; else emptyDescription">
     {{ project.idea_description }}
   </p>

@@ -20,7 +20,28 @@
   <section class="dashboard">
     <div class="dashboard-head">
       <div>
-        <h2 class="dashboard-title">{{ headTitle() }}</h2>
+        <div class="title-row">
+          <h2 class="dashboard-title">{{ headTitle() }}</h2>
+          <div class="title-filters" *ngIf="mainTab === 'projects' && !showTrash">
+            <select
+              class="filter-select"
+              aria-label="Sort by date"
+              [ngModel]="sortOrder()"
+              (ngModelChange)="sortOrder.set($event)">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
+            <select
+              class="filter-select"
+              aria-label="Filter by status"
+              [ngModel]="statusFilter()"
+              (ngModelChange)="statusFilter.set($event)">
+              <option value="All">All</option>
+              <option value="Unposted">Unposted</option>
+              <option value="Posted">Posted</option>
+            </select>
+          </div>
+        </div>
         <p class="dashboard-sub">{{ headSub() }}</p>
       </div>
       <div class="dashboard-head-right">

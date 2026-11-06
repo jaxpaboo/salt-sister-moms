@@ -76,6 +76,53 @@
   word-break: break-word;
 }
 
+.created-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.created-date {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #4b5563;
+  flex-shrink: 0;
+}
+
+.checklist-meter {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+}
+
+.checklist-meter__track {
+  width: 32px;
+  height: 8px;
+  border-radius: 4px;
+  background: #e5e7eb;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.checklist-meter__fill {
+  height: 100%;
+  border-radius: 4px;
+  background: #0f766e;
+  transition: width 0.15s ease;
+}
+
+.checklist-meter__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4b5563;
+  flex-shrink: 0;
+}
+
 .description {
   margin: 0;
   font-size: 0.9rem;
